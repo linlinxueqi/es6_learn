@@ -1,0 +1,19 @@
+<html>
+    <head>
+        <meta name="" content="" charset="utf-8">
+    </head>
+    <body>
+      1:数组实例的find方法，用于找到第一个符合条件的数组成员，它的参数是一个回调函数，所有数组成员一次执行该回调函数，直到找到第一个返回值为true的成员，然后返回该成员，没有符合条件的，则返回undefined
+    </br></br>
+    2:数组实例的findIndex方法的用法与find方法非常类似，返回第一个符合条件的数组成员的位置，如果所有成员不符合条件，则返回-1;
+      <script type="text/javascript">
+        console.log([1,4,-5,10].find((n) => n < 0));
+        console.log([1,5,10,15].find(function(value,index,arr){
+          return value > 11;
+        }));
+
+        console.log([NaN].indexOf(NaN));
+        console.log([NaN].findIndex(y => Object.is(NaN,y)));
+      </script>
+    </body>
+</html>

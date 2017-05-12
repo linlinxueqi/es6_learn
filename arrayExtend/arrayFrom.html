@@ -1,0 +1,103 @@
+<html>
+    <head>
+        <meta name="" content="" charset="utf-8">
+    </head>
+    <body>
+      1:Array.from() : 方法用于将两类对象转为真正的数组 ,但是不会改变当前数组</br>
+        （1）：类似数组的对象（array-lineobject）
+        （2）：可遍历（iterable）的对象，（包括es6新增的数据结构Set） </br></br>
+        扩展运算符（...）背后调用的是遍历器接口（Symbol.iterator），如果一个对象没有部署这个接口，就无法转换。 </br>
+        Array.from方法还支持类似数组的对象。所谓类似数组的对象，本质特征只有一点，即必须有length属性。 </br>
+        因此，任何有length属性的对象，都可以通过Array.from方法转为数组，而此时扩展运算符就无法转换。  </br>
+        <p>1111</p>
+        <p>2222</p>
+        <span class="name">span标签1</span></br>
+        let spans = document.querySelectorAll('span.name'); 这个是什么写法？？？ </br>
+        多了解map函数和array.prototype.slice的用法 </br>
+        <span class="name">span标签2</span></br>
+      </br>
+      </br>
+      </br>
+      Array.from()可以将各种值转为真正的数组，并且还提供map功能。这实际上意味着，只要有一个原始的数据结构，你就可以先对它的值进行处理，然后转成规范的数组结构，进而就可以使用数量众多的数组方法
+      </br>
+      </br>
+      Array.from()的另一个应用是，将字符串转为数组，然后返回字符串的长度。因为它能正确处理各种Unicode字符，可以避免JavaScript将大于\uFFFF的Unicode字符，算作两个字符的bug
+      <script type="text/javascript">
+          //类数组的相关转换
+          let arraylike = {
+            '0' : 2,
+            '1' : 4,
+            '2' : 6,
+            length : 3
+          };
+          //es5的写法
+          var arr1 = [].slice.call(arraylike);//['a','b','c'];
+          //es6的写法
+          let arr2 = Array.from(arraylike);//['a','b','c'];
+
+
+
+          //实际运用中，常见的类似数组的对象DOM操作返回的Nodelist集合，以及函数内部的arguments对象，Array.from都可以将他们转化为真正的数组
+          let ps = document.querySelectorAll('p'); //querySelectorAll() 方法返回是一个类似数组的对象
+          console.log(ps);
+          console.log(Array.from(ps));
+          Array.from(ps).forEach(function (p){
+            console.log(p);
+          });
+
+          function foo(){
+            var args = Array.from(arguments);
+            console.log(args);
+          }
+          foo();
+
+          //只要部署了Iterator接口的数据结构，Array.from()都能将其转为数组
+          console.log(Array.from('hello'));
+          let namesSet =  new Set(['a','b']);
+          console.log(namesSet);
+          console.log(Array.from(namesSet));
+
+          //值得注意的是：...扩展符，也可以将某些数据结构转化为新数组
+          function foo1(){
+            var args = [... arguments];
+            console.log(args);
+          }
+          foo1();
+          [...document.querySelectorAll('p')];
+
+          Array.from({length : 3});
+          console.log(  Array.from({length : 3}));
+
+          const toArray = (()=>{
+            Array.from ? Array.from : obj => [].slice.call(obj);
+          });
+
+
+          //array.from的第二个参数的用法
+          Array.from(arraylike,x => x * x);//==Array.from(arraylike).map(x => x * x);
+          console.log(Array.from(arraylike,x => x * x));
+
+          let spans = document.querySelectorAll('span.name');
+          console.log(spans);
+
+          let names1 = Array.prototype.map.call(spans,s => s.textContent);
+          console.log(names1);
+
+          let names2 = Array.from(spans,s => s.textContent);
+          console.log(names2);
+
+          console.log(Array.from([1,,2,,3],(n) => n || 0)); //[1, 0, 2, 0, 3]
+
+
+          function typeof(){
+            return Array.from(arguments,value => typeof value);
+          }
+          console.log(typeof(null,[],NaN));
+
+          //Array.from()的另一个应用是，将字符串转为数组，然后返回字符串的长度。因为它能正确处理各种Unicode字符，可以避免JavaScript将大于\uFFFF的Unicode字符，算作两个字符的bug
+          function countSymbols(string){
+            return Array.from(string).length;
+          }
+      </script>
+    </body>
+</html>

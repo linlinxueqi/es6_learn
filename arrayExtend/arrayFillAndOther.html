@@ -1,0 +1,61 @@
+<html>
+    <head>
+        <meta name="" content="" charset="utf-8">
+    </head>
+    <body>
+      1：fill方法使用给定制，填充一个数组
+        (1):一个参数时：把数组所有内容全部改变成填充数据
+        (2):fill方法还可以接受第二个和第三个参数，用于指定填充的起始位置和结束位置
+
+      2:数组实例的entries(),keys()和values()方法，用于遍历数组
+        （1）:遍历数组的方法：  for..of 循环遍历     keys()对键名遍历，values()对键值遍历    entries()是对键值对遍历
+
+
+      3:数组实例的includes()
+          includes()方法返回一个布尔值，表示某个数组是否包含给定的值，与字符串的includes方法类似。该方法属于ES7，但Babel转码器已经支持。
+
+      <script type="text/javascript">
+        console.log(['a','b','c'].fill(7));//[7,7,7];
+        console.log([1,2,3].fill(7,1,2));//[1,7,3];
+
+
+        //entries() values() keys()
+        for(let index of ['a','b'].keys()){
+          console.log(index);
+        }
+
+        // for(let elem of ['a','b'].values()){
+        //   console.log(elem);
+        // }
+
+        for(let [index,elem] of ['a','b'].entries()){
+          console.log(index,elem);  //0 "a"  1"b"
+        }
+
+
+        let letter = ['a','b','c'];
+        let entries = letter.entries();
+        console.log(entries);
+        console.log(entries.next().value);
+        console.log(entries.next().value);
+        console.log(entries.next().value);
+
+
+        //includes();
+        console.log([1,2,3].includes(2));
+        console.log([1,2,3].includes(4));
+        console.log([1,2,NaN].includes(NaN));
+
+        console.log([1,2,3].includes(3,-1));
+        console.log([1,2,3].includes(3,3));
+
+        //检测当前环境是否支持该方法，如果不支持，部署一个简易的替代版
+        // const contains = ((arr,value) => {
+        //     Array.prototype.includes ? (arr,value) => arr.includes(value) : (arr,value) => arr.some(el => el === value)
+        // })();
+        // contains(['foo','bar'],'baz');
+
+
+      </script>
+    </body>
+</html>
