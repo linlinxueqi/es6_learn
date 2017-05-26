@@ -1,0 +1,191 @@
+<html>
+    <head>
+        <meta name="" content="" charset="utf-8">
+    </head>
+    <body>
+      2:对象的解构赋值
+      <script type="text/javascript">
+      //对象的解构赋值
+      //对象的解构与数组有一个重要的不同。数组的元素是按次序排列的，
+      //变量的取值由它的位置决定；而对象的属性没有次序，变量必须与属性同名，才能取到正确的值
+      let {bar1,foo1} = {foo1:"aaa",bar1:"bbb"};
+      console.log(foo1,bar1);
+      let {baz1} = {foo1:"aaa",bar1:"bbb"};
+      console.log(baz1);
+
+      //如果变量名与属性名不一直，必须写成下面这样
+      var {foo2:baz2} = {foo2:"aaa"};
+      console.log(baz2);
+      let obj = {first :'hello',last:'world'};
+      let {first:f,last:l} = obj;
+      console.log(f,l);
+      //上面的两个例子说明，对象解构的赋值是下面形式的简写
+      let {a1:a1,b1:b1} = {a1:"aaa",b1:"bbb"};
+
+
+      function onComplete(){
+        let str = [1,2];
+      	return str;
+      }
+      console.log(onComplete());
+      var lnglarXY = onComplete();
+      console.log("lnglarXY======="+lnglarXY);
+
+
+      //如果有参数
+      function onComplete1(data){
+        let str = data;
+        return str;
+      }
+      var lnglarXY1 = onComplete1([1,2]);
+      console.log(lnglarXY1);
+
+
+
+    //   /*
+    //   * 获取拥有等级最小的技能
+    //   */
+    //  private Skill getMinLevelSkill(List<Skill> skills){
+    //      Skill minSkill = skills.get(0);
+    //      for (int i=1;i<skills.size();i++){
+    //          if (skills.get(i).getToSkillLevel() < minSkill.getToSkillLevel()){
+    //              minSkill = skills.get(i);
+    //          }
+    //      }
+    //      return minSkill;
+    //  }
+
+      /**
+   * 一键升级处理 （循环）
+   *
+   * @param player
+   * @param minSkill
+   */
+  // public void hand(Player player, Skill minSkill){
+  //     int reason;
+  //     int totalMoney = 0;
+  //     int oldTotalMoney = 0;
+  //     while(true){
+  //         Cfg_skilldataBean skillBean = Manager.gameDataManager.Cfg_skilldataContainer.getValByKey(minSkill.getToSkillId());
+  //         Cfg_skilldataBean nextSkillBean = Manager.gameDataManager.Cfg_skilldataContainer.getValByKey(skillBean.getNext_skill_id());
+  //         if (nextSkillBean == null){
+  //             reason = 1;
+  //             break;
+  //         }
+  //         if (nextSkillBean.getNeedHeroLevel() > player.getLevel()){
+  //             reason = 2;
+  //             break;
+  //         }
+  //         oldTotalMoney = totalMoney;
+  //         totalMoney += nextSkillBean.getUpgrade_solo_gold().get(0).getNum();
+  //         if (!Manager.backpackManager.canDecCoin(player, CoinType.Money,totalMoney)){
+  //             reason = 3;
+  //             break;
+  //         }
+  //         minSkill.setToSkillLevel(nextSkillBean.getSkill_level());
+  //         minSkill.setToSkillId(nextSkillBean.getSkill_id());
+  //         minSkill = getMinLevelSkill(player.getSkills());
+  //     }
+  //     switch (reason){
+  //         case 1 : {
+  //             if (totalMoney !=0 && Manager.backpackManager.decCoin(player, totalMoney, ItemChangeReason.UpSkillLevel.getValue(), 0, CoinType.Money)){
+  //                 updateAutoSkill(player);
+  //                 sendSkillIdList(player);
+  //             } else {
+  //                 MessageUtils.notify_player(player, Notify.ERROR, StringData.Msg_5030);
+  //             }
+  //         }break;
+  //
+  //         case 2 : {
+  //             if (totalMoney !=0 && Manager.backpackManager.decCoin(player, totalMoney, ItemChangeReason.UpSkillLevel.getValue(), 0, CoinType.Money)){
+  //                 updateAutoSkill(player);
+  //                 sendSkillIdList(player);
+  //             } else {
+  //                 MessageUtils.notify_player(player, Notify.ERROR, StringData.Msg_5031);
+  //             }
+  //         }break;
+  //
+  //         case 3 : {
+  //             if (totalMoney !=0 && Manager.backpackManager.decCoin(player, oldTotalMoney, ItemChangeReason.UpSkillLevel.getValue(), 0, CoinType.Money)){
+  //                 updateAutoSkill(player);
+  //                 sendSkillIdList(player);
+  //             } else {
+  //                 MessageUtils.notify_player(player, Notify.ERROR, StringData.CoinNotEnough, CoinType.Money + "");
+  //             }
+  //         }break;
+  //
+  //         default : {
+  //             log.error("错误的reason:" + reason);
+  //             return;
+  //         }
+  //     }
+  // }
+  //
+  // /**
+  //  * 一键升级成功更新技能
+  //  */
+  // public void updateAutoSkill(Player player){
+  //     for (Skill skill : player.getSkills()){
+  //         skill.setId(skill.getToSkillId());
+  //         skill.setLevel(skill.getToSkillLevel());
+  //     }
+  // }
+
+        //----------用途---------
+        //1:交换变量的值
+        let x = 1;
+        let y = 2;
+        [x,y] = [y,x];
+        //从函数返回多个值
+        function example(){
+          return [1,2,3];
+        }
+        let [a2,b3,c4] = example();
+        console.log(a2);
+
+        function example1(){
+          return {
+            foo4:1,
+            bar4:2
+          }
+        }
+        let {foo4,bar4} = example1();
+        console.log(foo4);
+
+        //函数参数的定义
+        function f111([x,y,z]){};
+        f111([1,2,3]);
+        function f222({x,y,z}){
+        return {x,y,z};
+        };
+        f222({z:3,y:2,x:1});
+
+        console.log(f222({z:3,y:2,z:1}));
+
+        let jsonData = {
+          id:42,
+          status:"OK",
+          data:[867,5309]
+        };
+        let {id,status,data:number} = jsonData;
+        console.log(id,status,number);
+
+        //函数参数的默认值
+        jQuery.ajax = function(url,{
+          async = true,
+          beforeSend = function(){},
+          cache = true,
+          complete = function(){},
+          corssDomain = false;
+          global = true,
+        }){
+
+        };
+        
+        //遍历Map结构
+        for(let [key] of map){
+
+        }
+        </script>
+    </body>
+</html>

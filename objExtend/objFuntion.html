@@ -1,0 +1,117 @@
+<html>
+    <head>
+        <meta name="" content="" charset="utf-8">
+    </head>
+    <body>
+      <script type="text/javascript">
+          //1:object.is();
+          //ES5比较两个值是否相等，只有两个运算符：==，===
+          //== 会自动转换数据类型，===NaN不等于自身以及+0等于-0;
+          console.log(Object.is('foo','foo'));
+          console.log(Object.is({},{}));
+          console.log(+0 === -0);
+          console.log(NaN === NaN);
+          console.log(Object.is(+0,-0));
+          console.log(Object.is(NaN,NaN));
+
+          //es5通过下面的代码,部署Oject.is;
+          Object.defineProperty(Object,'is',{
+              value: function(x, y) {
+                if(x === y) {
+                  //针对+0不等于-0的情况下
+                  return x !== 0 || 1/x === 1/y;
+                }
+                //针对NaN不等于NaN的情况下
+                return x !== x && y !== y;
+              },
+              configurable: true,
+              enumerable: false,
+              writable: true
+          });
+
+          //2:Object.assign();
+          //Object.assign()方法用于对象的合并，将源对象（source)的所有可枚举属性，复制到目标对象（target）
+          let target = {a : 1};
+          let source1 = {b : 2};
+          let source2 = {c : 3};
+          //方法的第一个参数是目标对象，后面的参数都是源对象
+          Object.assign(target,source1,source2);
+          console.log(target);
+
+          var obj = {a : 1};
+          Object.assign(obj) === obj;//true
+
+          //如果该参数不是一个对象，Object会直接返回该对象
+          console.log(typeof Object.assign(2)); //object
+          //undefined 和 null 无法转换成对象，所以作为参数的时候，就会报错
+          //Object.assign(undefined);
+          //Object.assign(null);
+
+          Object.assign(obj,undefined);
+          Object.assign(obj,null);
+
+          var v1 = 'abc';
+          var v2 = true;
+          var v3 = 10;
+          var obj2 = Object.assign({},v1,v2,v3);
+          console.log(obj2);
+
+          //v1、v2、v3分别是字符串、布尔值和数值，结果只有字符串合入目标对象（以字符数组的形式），
+          //数值和布尔值都会被忽略。这是因为只有字符串的包装对象，会产生可枚举属性。
+
+
+          var obj3 = Object.assign({b : 'c'},
+            Object.defineProperty({},'invisible',{
+              enumerable: false,
+              value: 'hello'
+            })
+        )
+        console.log(obj3);//{b : 'c'}
+
+        Object.assign({a : 'b'},{[Symbol('c')]: 'd'});
+        //属性名为Symbol的值，会被拷贝
+
+
+        //注意点：Object.assign()方法实行的是浅拷贝，不是深拷贝，也就是说，源对象某个属性的值是对象，那么目标对象拷贝得到的是这个对象的引用
+        var target1 = {a : {b : 'c',d : 'e'}};
+        var source3 = { a : { b : 'hello'}};
+        console.log(Object.assign(target1,source3));//{ a : { b : "hello"}};
+
+
+      //3:Object.assign()的常见用途
+      //（1）：为对象添加属性
+      class Point {
+        constructor(x, y) {
+          Object.assign(this,{x,y});
+        }
+      }
+      //将x , y 属性添加到Point类的对象实例
+
+      //（2）：为对象添加方法
+      let SomeClass = {hello(){}};
+
+      Object.assign(SomeClass.prototype,{
+        someMethod(arg1, arg2){},anotherMothod(){}
+      });
+      //等同于
+      SomeClass.prototype.someMethod = function(arg1, arg2) {};
+      SomeClass.prototype.anotherMothod = function(){};
+
+      //(3):克隆对象
+      function clone(origin) {
+        return Object.assign({},origin);
+      }
+      //克隆他的继承值
+      function clone1(origin) {
+        let originProto = Object.getPrototypeOf(origin);
+        return Object.assign(Object.create(originProto),origin);
+      }
+
+      //（4）：合并多个对象
+      let merge = (target,...sources) =>Object.assign(target,...sources);
+
+      //为属性指定默认值
+
+      </script>
+    </body>
+</html>

@@ -1,0 +1,81 @@
+<html>
+    <head>
+        <meta name="" content="" charset="utf-8">
+    </head>
+    <body>
+      <script type="text/javascript">
+      //1:定义对象属性的方法
+        let obj = {};
+        obj.foo = true;
+        obj['a'+'bc'] = 123;
+        console.log(obj);
+
+        let propKey = 'foo';
+        let obj1 = {
+          [propKey]:true,
+          ['a'+'bc']:123
+        }
+        var lastWord = 'last word';
+        var a = {
+          'first word' : 'hello',
+          [lastWord] : 'world'
+        };
+        console.log(a['first word']);
+        console.log(a[lastWord]);
+        console.log(a['last word']);
+
+        //2:属性名表达式不能与简洁表示法同时使用，会报错
+        var foo = 'bar';
+        var bar = 'abc';
+      //  var baz1 = {[foo]}; 报错
+
+        var baz = { [foo]: 'abc'};
+        console.log(baz);
+
+        let keyA = {a:1};
+        let keyB = {b:1};
+        let myObject = {
+          [keyA]: 'valueA',
+          [keyB]: 'valueB'
+        };
+        console.log(myObject);//Object {[object Object]: "valueB"}
+        //上面代码中，[keyA]和[keyB]得到的都是[object Object]，
+        //所以[keyB]会把[keyA]覆盖掉，而myObject最后只有一个[object Object]属性。
+
+        //3:方法的name属性
+        let person = {
+          sayName() {
+            console.log('hello');
+          }
+        }
+        console.log(person.sayName.name);
+
+        let obj2 = {
+          get foo(){},
+          set foo(x){}
+        }
+        console.log(obj.foo.name);//undefined;
+        let descriptor = Object.getOwnPropertyDescriptor(obj2,'foo');
+        console.log(descriptor.get.name); //'get foo';
+        console.log(descriptor.set.name); //'set foo';
+
+        //两种特殊情况
+        var doSomething = function(){
+
+        }
+        console.log(doSomething.bind().name);//bind方法创造的函数，name属性返回bound加上原函数的名字
+        console.log((new Function()).name);//Funtion 构造函数创造的函数，name属性返回anonymous
+
+        //对象的方法是一个symbol值，那么name 属性返回symbol值的描述
+        let key1 = Symbol('desc');
+        let key2 = Symbol();
+        let obj3 = {
+          [key1](){},
+          [key2](){}
+        }
+        console.log(obj3[key1].name);
+        console.log(obj3[key2].name);
+
+      </script>
+    </body>
+</html>

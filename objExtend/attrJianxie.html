@@ -1,0 +1,102 @@
+<html>
+    <head>
+        <meta name="" content="" charset="utf-8">
+    </head>
+    <body>
+      <script type="text/javascript">
+            //1：属性是变量的简写
+            var x = 'bar';
+            var baz = {x};
+            console.log(baz);
+            //等同于
+            var baz1 = {x : x};
+            console.log(baz1);
+
+            function  f(x, y) {
+              return {x , y};
+            };
+            console.log(f(1,2));
+            //等同于
+            function f1(x, y) {
+              return {x : x, y : y};
+            }
+            console.log(f1(1,2));
+            function getPoint(){
+              var x = 1;
+              var y = 10;
+              return {x, y};
+            }
+            console.log(getPoint());
+
+            //2:属性是方法的简写
+            var o = {
+              method() {
+                return "hello";
+              }
+            };
+            //等同于
+            var o1  = {
+              method:function(){
+                return "hello";
+              }
+            }
+            var birth = '2000/01/01';
+            var Person = {
+              name : "张三",
+              birth,
+              hello(){
+                console.log("我的名字是",this.name);
+              }
+            }
+            Person.hello();
+
+            //3：例子：CommonJs 模块输出变量
+            var ms = {};
+            function getItem(key) {
+              return key in ms ? ms[key] : null;
+            }
+            function setItem(key, value) {
+              ms[key] = value;
+            }
+            function clear(){
+              ms = {};
+            }
+            //module.export = {getItem, setItem, clear};
+            //等同于
+            // module.export = {
+            //   getItem : getItem,
+            //   setItem : setItem,
+            //   clear : clear
+            // };
+
+            var cart = {
+              _wheels: 4,
+              get wheels(){
+                return this._wheels;
+              },
+              set wheels(value){
+                if(value < this._wheels) {
+                  throw new Error("数值太小了!");
+                }
+                this._wheels = value;
+              }
+            }
+
+            var obj = {
+              class(){
+
+              }
+            };
+            //等同于
+            var obj1 = {
+              'class' = function(){}
+            }
+            //如果某个方法是Generator函数，前面需要加上星号
+            var obj2 = {
+              *m(){
+                yield 'hello world';
+              }
+            }
+      </script>
+    </body>
+</html>

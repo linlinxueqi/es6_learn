@@ -3,8 +3,39 @@
         <meta name="" content="" charset="utf-8">
     </head>
     <body>
+      变量的解构赋值
+      es6允许按照一点模式，从数组和对象中提取值，对变量进行赋值，这被称为解构（destructuring）</br>
       1:数组的解构赋值
+
       <script type="text/javascript">
+        //数组的解构
+        let [foo,[[bar],[baz]]] = [1,[[2],[3]]];
+        let [x,[y],[k]] = [1,[2,3],[4]];
+        console.log(x,y,k);//1,2,4
+        console.log(foo,bar,baz);//1,2,3
+
+        let [head,...tail] = [1,2,3,4];
+        console.log(head,tail);//1,[2,3,4]
+
+        let [e,r,...t] = ['a'];
+        console.log(e,r,t);//'a',undefined,[];
+
+        //let [[foo]] =[1];
+
+        //如果等号右边不是数组（或者严格地说，不是可遍历的结构，将会报错）
+        //let [foo] = 1;
+        //let [foo] =false;
+        //let [foo] = NaN;
+        //let [foo] = undefined;
+        //let [foo] = null;
+        //let [foo] = {};
+
+        //上面的集中情况，要么转为对象以后不具备Iterator接口（前面5个），（最后一个）要么本身就不具备Interator接口
+
+
+
+
+
 
       </script>
     </body>
