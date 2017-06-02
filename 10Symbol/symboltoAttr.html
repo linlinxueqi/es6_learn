@@ -1,0 +1,93 @@
+<html>
+    <head>
+        <meta name="" content="" charset="utf-8">
+    </head>
+    <body>
+      2:symbol作为属性名
+
+      <script type="text/javascript">
+        //1：由于Symbol值每个都是不相等的，这意味着Symbol值可以作为标识符，用于对象的属性名
+        //保证不会出现同名的属性，这对于一个对象由多个模块构成的情况非常有用，能防止某个键被不小心改写或者覆盖
+
+        var mySymbol = Symbol();
+        var a = {};
+        a[mySymbol] = 'hello';
+        var a1 ={
+          [mySymbol] :'hello'
+        }
+        var a2 = {};
+        Object.defineProperty(a2,mySymbol,{value:'hello'});
+        console.log(a[mySymbol]);
+
+        //2:Symbol值作为对象属性名时，不能用点算运算符
+        var mySymbol1 = Symbol();
+        var b = {};
+        b.mySymbol1 = 'hello';
+        console.log(b[mySymbol1]);
+        console.log(b['mySymbol1']);
+        // 上面代码中，因为点运算符后面总是字符串，所以不会读取mySymbol1作为标识名所指代的那个值
+        //导致b的属性名实际上是一个字符串，而不是一个Symbol值
+
+        //3:同理：在对象的内部，使用Symbol值定义属性值，必须放在方括号之中
+        let s = Symbol();
+        let obj ={[s]:"111"};
+        console.log(obj[s]);
+
+        //4:Symbol类型还可以用于定义一组常量，保证这组常量的值都是不相等的
+        // let log;
+        // log.levels = {
+        //   DEGUB: Symbol('debug'),
+        //   INFO: Symbol('info'),
+        //   WARN: Symbol('warn')
+        // };
+        // log(log.levels.DEBUG,'debug message');
+        // log(log.levels.INFO,'info message');
+        //Symbol值作为属性名时，该属性是公开属性，不是私有属性
+
+        //5:消除魔术字符串:在代码中多次出现，与代码形成强耦合的某一个具体的字符串或者数值（魔术字符串）
+        //风格良好的代码，应该尽量消除魔术字符串，改由含义清晰的变量代替
+        function getArea(shape,options){
+          var area = 0;
+          switch(shape){
+            case 'Triangle': //魔术字符串
+              area = .5 * options.width * options.height;
+              break;
+          }
+        }
+        var shapeType ={
+          triangle: 'Triangle'
+        }
+        getArea(shapeType.triangle,{width:100,height: 100});
+
+        //仔细分析，shapeType.triangle的值并不重要，只要确保不会跟其他shapeType属性的值冲突即可
+        //所以很适合用Symbol
+        let shapeType1 = {
+          triangle : Symbol()
+        }
+
+        //6:属性的遍历
+        // Symbol 作为属性名，该属性不会出现在for...in .for...of 循环中，也不会被Object.keys(),Object.getOwnPropertyNames()
+        // JSON.stringify()返回，但是他也不是一个私有属性，是一个公开属性，
+        // 有一个Object.getOwnPropertySymbols()，可以获取指定对象的所有Symbol属性名
+        var obj1 = {};
+        var a1 = Symbol('a');
+        var b1 = Symbol('b');
+        obj1[a1] = 'hello';
+        obj1[b1] = 'world';
+        console.log(Object.getOwnPropertySymbols(obj1));
+
+        var obj2 = {};
+        var foo1 = Symbol('foo');
+        Object.defineProperty(obj2,foo1,{
+          value: 'foobar',
+        });
+        for(var i in obj2){
+          console.log(i);//无输出
+        }
+        console.log(Object.getOwnPropertyNames(obj2));//[]
+        console.log(Object.getOwnPropertySymbols(obj2));//[Symbol(foo)]
+
+        
+      </script>
+    </body>
+</html>

@@ -1,0 +1,162 @@
+<html>
+    <head>
+        <meta name="" content="" charset="utf-8">
+    </head>
+    <body>
+      1:Object.keys(),Object.values(),Object.entries();三种方法介绍
+      ES2017 引入了跟Object.keys配套的Object.values和Object.entries，
+      作为遍历一个对象的补充手段，供for...of循环使用。
+
+      <br><br>
+      2:Object.entries()的基本用途是遍历对象的属性
+         let obj = { one : 1 ,two : 2};
+         for(let [k, v] of Object.entries(obj)){
+           console.log(
+              `${JSON.stringify(k)}: $(JSON.stringify(v))`
+           )
+         }
+      3：Object.entries()的另外一个用途是将对象转为真正的Map结构
+      var obj = { foo : 'bar', baz : 42};
+      var map = new Map(Object.entries(obj));
+      console.log(map);//Map{foo : 'bar', baz : 42};<br><br>
+
+     4：对象的扩展运算符(双重解构赋值的复习)
+      <script type="text/javascript">
+          // ES2017 引入了跟Object.keys配套的Object.values和Object.entries，
+          // 作为遍历一个对象的补充手段，供for...of循环使用。
+
+          //实现entries()方法 Generator函数版本
+          // function* entries(obj){
+          //   for(let key of Object.keys(obj)){
+          //     yield [key,obj[key]];
+          //   }
+          // }
+          // // 非Generator函数版本
+          // function entires(obj){
+          //   let arr = [];
+          //   for(let key of Object.keys(obj)){arr.push([key,obj[key]])};
+          //   return arr;
+          // }
+
+          //对象的扩展运算符
+          // var o = Object.create({x : 1, y : 2});
+          // o.z = 3;
+          // let {x, ...{y,z}} = o;
+          // console.log(x);//1
+          // console.log(y);//undefined
+          // console.log(z);//3
+          //变量x是单纯的解构赋值，所以可以读取对象o继承的属性；
+          //变量y和z是双重解构赋值，只能读取对象o自身的属性，所以只有变量z可以赋值成功。
+
+          //解构赋值的一个用处，是扩展某个函数的参数，引入其他的操作
+          // function baseFunction({a,b}){};
+          // function wrapperFunction({x,y,...restConfig}){
+          //   retur baseFunction(restConfig);
+          // }
+          //原始函数baseFunction接受a和b作为参数，
+          // 函数wrapperFunction在baseFunction的基础上进行了扩展，能够接受多余的参数，并且保留原始函数的行为。
+
+          // //扩展运算符可以用于取出参数对象的所有的可遍历属性，拷贝到当前对象中
+          // let z = { a: 3, b: 4};
+          // let n = {...z};
+          // console.log(n);//{a:3,b:4};
+          //相当于Object.assign()方法
+
+          //运用来修改现有对象的部分的部分属性
+          // let newVersion = {
+          //   ...previousVersion,
+          //   name:'New Name'
+          // }
+          // let emptyObj = {...null,...undefined};//不报错
+
+          //es2017引入了Object.getOwnPropertyDescriptor()方法，返回某个对象属性的描述对象
+          // var obj = {p :'a'};
+          // Object.getOwnPropertyDescriptor(obj);
+
+          //Object.getOwnPropertyDescriptors()返回一个对象，所有原对象的属性名都是该对象的属性名
+          //对应的属性值都是该属性的描述对象
+
+          function getOwnPropertyDescriptors(){
+              let resulet = {};
+              for(let key of Reflect.ownKeys(obj)){
+                resulet[key] = Object.getOwnPropertyDescriptor(obj,key);
+              }
+              return resulet;
+          }
+
+          //该方法引入的目的，主要是为了解决Object.assign()无法正常拷贝get和set属性
+          let source = {
+            set foo(value){
+              console.log(value);
+            }
+          }
+          let target1 = {};
+          Object.assign(target1,source);
+          Object.getOwnPropertyDescriptor(target1,'foo');
+          console.log(Object.getOwnPropertyDescriptor(target1,'foo'));
+
+          let target2 = {};
+          Object.defineProperties(target2,Object.getOwnPropertyDescriptors(source));
+          console.log(Object.getOwnPropertyDescriptor(target2,'foo'));
+
+          //上面的代码中，将两个对象合并的逻辑提炼出来，如下
+          let shallowMerge = (target2,source) => Object.defineProperties(target2,Object.getOwnPropertyDescriptors(source));
+
+          //Object.getOwnPropertyDescriptors方法的另一个用处，是配合Object.create方法，
+          // 将对象属性克隆到一个新对象中
+          let clone = Object.create(Object.getPrototypeOf(obj),Object.getOwnPropertyDescriptors(obj));
+          //或者
+          let shallowClone = (obj) => Object.create(Object.getPrototypeOf(obj),Object.getOwnPropertyDescriptors(obj));
+
+
+
+          //继承的三种写法
+          let prot = {};
+          let ob1 = {
+            _proto_: prot,
+            foo: 123
+          };
+
+          let ob2 = Object.create(prot);
+          obj.foo = 123;
+
+          let ob3 = Object.assign(
+            Object.create(prot),
+            {
+              foo: 123
+            }
+          )
+
+          //Object.getOwnPropertyDescriptors()的继承写法
+          let oj4 = Object.create(prot,Object.getOwnPropertyDescriptors({ foo : 123}));
+
+
+          //Object.getOwnPropertyDescriptors实现Mixin混入模式
+          let mix = (object) =>({
+            with: (...mixins) => mixins.reduce((c,mixin) => Object.create(c,Object.getOwnPropertyDescriptors(mixin)),object)
+          });
+          let a = {a: 'a'};
+          let b = {b: 'b'};
+          let c = {c: 'c'};
+          let d = mix(c).with(a,b);
+          //上面的代码将a,b混入了对象c中
+
+
+
+
+          //Null传导运算符
+          //如果要读取对象内部的某个属性，往往需要判断一个该对象是否存在
+          //要读取message.body.user.firstName,安全的写法如下
+          let firstName = (message&&message.body&&message.body.user&&message.body.user.firstName) || 'default';
+
+          let firstName1 = message?.body?.user?.firstName || 'default';
+
+          //Null传导运算符有四种写法
+          -obj?.prop //读取对方属性
+          -obj?.[expr] //同上
+          func?.(...args)//函数或者对象方法的条用
+          new C?.(...args)//构造函数的调用
+          
+      </script>
+    </body>
+</html>

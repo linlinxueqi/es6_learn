@@ -1,0 +1,48 @@
+<html>
+    <head>
+        <meta name="" content="" charset="utf-8">
+    </head>
+    <body>
+      <script type="text/javascript">
+        // 1:基本用法
+          //es6提供的新的数据解构Set,类似于数组，但是成员的值是唯一的，但是没有重复的值
+
+          //Set本身就是一个构造函数，用来生成Set数据结构
+          let s = new Set();
+          [2,3,5,4,2,2,5,6,3].forEach(x => s.add(x));
+          console.log(s);//2,3,5,4,6
+          for(let i of s){
+            console.log(i);
+          }
+
+          //Set 函数可以接受一个数组（或者类数组的对象）作为参数，用来初始化
+          let s1 = new Set([1,2,3,4,4]);
+          console.log([...s1]);//[1,2,3,4]
+          console.log(s1);//Set(4){1,2,3,4};
+
+          let s2 = new Set([1,2,3,4,5,5,5,5]);
+          console.log(s2.length);//5
+
+          // function divs(){return [...document.querySelectorAll('div')]};
+          // let s3 = new Set(divs());
+          // s3.size;
+          //类似于
+          // divs().forEach(div => set.add(div));
+          // s3.size;
+
+          [...new Set(array)];//NaN等于自身，{}不等于自身
+          // Set实例的属性和方法
+          //Set实例的方法分为两大类：操作方法（用于操作数据）和遍历方法（用于遍历成员）】
+          // -add(value);添加某个值，返回Set结构本身
+          // -delete(value);删除某个值，返回一个布尔值，表示删除是否成功
+          // has(value);返回一个布尔值，表示该值是否为Set的成员
+          // clear();清除所有成员，没有返回值
+
+          //Object结构和Set解构判断是否包括一个键的区别
+          let properties = {
+            'width': 1,
+            'height': 1
+          };
+      </script>
+    </body>
+</html>

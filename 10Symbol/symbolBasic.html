@@ -1,0 +1,46 @@
+<html>
+    <head>
+        <meta name="" content="" charset="utf-8">
+    </head>
+    <body>
+      1:Sumbol概述
+      
+      <script type="text/javascript">
+            //1:symbol函数前不能使用new命令,否则会报错，因为symbol是一个原始类型的值，不是对象
+            var s1 = Symbol('foo');
+            var s2 = Symbol('bar');
+            console.log(s1);
+            console.log(s2);
+            console.log(s1.toString());
+            console.log(s2.toString());
+
+            //2:如果Symbol的参数是一个对象，就会调用对象的toString()方法，将其转换成字符串,然后生成一个SymboL值
+            let obj = {toString(){return 'abc'}};
+            sym = Symbol(obj);
+            console.log(sym);
+
+            //3:Symbol函数的参数只是表示对当前Symbol值的描述，因此相同参数的Symbol函数的返回值是不相等的
+            var s3 = Symbol();
+            var s4 = Symbol();
+            console.log(s3 === s4);//false
+            var s5 = Symbol('foo');
+            var s6 = Symbol('foo');
+            console.log(s5 === s6);//false
+
+            //4:Symbol值不能与其他类型的值进行运算，会报错。但是可以显式转换成字符串
+            var sym1 = Symbol('My symbol');
+            // "your symbol is" + sym;can't convert symbol to string  不能将symbol转变成string
+            console.log(String(sym1));
+            console.log(sym1.toString());
+
+            //5:Symbol值可以转换成布尔值，但是不能转为数值
+            var sym2 = Symbol();
+            Boolean(sym2);
+            console.log(!sym2);
+            //Number(sym2);can't convert symbol to number
+            //console.log(sym2+2);
+
+
+      </script>
+    </body>
+</html>
