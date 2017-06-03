@@ -87,7 +87,29 @@
         console.log(Object.getOwnPropertyNames(obj2));//[]
         console.log(Object.getOwnPropertySymbols(obj2));//[Symbol(foo)]
 
-        
+        //一个新的API.Reflect.ownKeys()方法可以返回所有类型的键名，包括常规的键名和Symbol键名
+        let obj3 = {
+          [Symbol('my_key')]:1,
+          enum: 2,
+          nonEnum:3
+        };
+        console.log(Reflect.ownKeys(obj3));
+
+        //7:由于Symbol值作为名称的属性，不会被常规方法遍历得到。
+        // 利用这个特性，为对象定义一些非私有的，但又希望只用于内部的方法
+        var size  = Symbol('size');
+        class Collection {
+          constructor() {
+            this[size] = 0;
+          }
+          add(item) {
+            this[this[size]] = item;
+            this[size]++;
+          }
+          static sizeOf(instance){
+            return instance[size];
+          }
+        }
       </script>
     </body>
 </html>
