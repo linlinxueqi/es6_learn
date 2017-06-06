@@ -30,7 +30,7 @@
           // divs().forEach(div => set.add(div));
           // s3.size;
 
-          [...new Set(array)];//NaN等于自身，{}不等于自身
+          //[...new Set(array)];//NaN等于自身，{}不等于自身
           // Set实例的属性和方法
           //Set实例的方法分为两大类：操作方法（用于操作数据）和遍历方法（用于遍历成员）】
           // -add(value);添加某个值，返回Set结构本身
@@ -39,10 +39,90 @@
           // clear();清除所有成员，没有返回值
 
           //Object结构和Set解构判断是否包括一个键的区别
+          //对象的写法
           let properties = {
             'width': 1,
             'height': 1
           };
+          //if(properties[someName]){}
+          //Set的写法
+          let properties1 = new Set();
+          properties1.add('width');
+        //  if(properties1.has(someName)){};
+
+          //Array.from()方法可以将Set解构转为数组
+          let items = new Set([1,2,3,4,5]);
+          let array1 = Array.from(items);
+          //去除数组重复成员的另外一种方法
+          function dedupe(array){
+            return Array.from(new Set(array));
+          }
+          console.log(dedupe([1,1,2,3,3]));//[1,2,3]
+
+          //2:遍历操作
+          // Set结构的实例有四个遍历方法，可以用于遍历成员 keys(),values(),entries(),forEach()=>使用回调函数遍历每个成员
+          //keys方法、values方法、entries方法返回的都是遍历器对象（详见《Iterator 对象》一章）。
+          // 由于 Set 结构没有键名，只有键值（或者说键名和键值是同一个值），所以keys方法和values方法的行为完全一致。
+
+          //(1):注意：------都是返回的遍历对象
+          let set1 = new Set(['set','green','blue']);
+          for(let item of  set1.keys()){
+            console.log(item);//red    green   blue
+          }
+
+          for(let item of set1.values()){console.log(item)};
+          //red    green   blue
+
+          for(let item of set1.entries()){console.log(item)};
+          // (2) ["set", "set"]
+          // (2) ["green", "green"]
+          // (2) ["blue", "blue"]
+
+          //Set结构的实例默认可遍历，它的默认遍历器生成函数就是他的values方法
+          console.log(Set.prototype[Symbol.iterator] === Set.prototype.values);
+          //这意味着，可以省略values方法，直接用for...of 循环遍历Set
+          let set2 = new Set(['red','green','blue']);
+          for(let x of set2){
+            console.log(x);
+          }
+
+          //(2):forEach()
+          // Set结构的实例的forEach方法，用于对每个成员执行某种操作，没有返回值
+
+          let set3 = new Set([1,2,4]);
+          set3.forEach((value,key)=> console.log(value*2));//2,4,8
+
+          //forEach方法的参数就是一个处理函数。该函数的参数依次为键值、键名、集合本身（上例省略了该参数）。
+          // 另外，forEach方法还可以有第二个参数，表示绑定的this对象。
+
+          //3:遍历的应用
+          //扩展运算符（...）内部使用for...of循环，所以也可以用于Set结构
+          let set4 = new Set(['red','green','blue']);
+          let arr = [...set4];
+          console.log(arr);//['red','green','blue']
+
+          let arr1 = [3,4,5,6,4,2,3];
+          console.log(new Set(arr1));//Set(5) {3, 4, 5, 6, 2}
+          let unique = [...new Set(arr1)];
+          console.log(unique);//(5) [3, 4, 5, 6, 2]
+
+          //(2):数组的map和filter方法用于set
+          let set5 = new Set([1,2,3]);
+          set5 = new Set([...set5].map(x => x*2));
+          console.log(set5);//Set(3) {2, 4, 6}
+
+          let set6 = new Set([1,2,4,5,3]);
+          set6 = new Set([...set6].filter(x => (x%2)==0));
+          console.log(set6);//Set(3) {2, 4}
+
+          //如果想在遍历操作中，同步改变原来的Set结构，目前没有直接的方法，但有两种变通方法
+          //一种是利用原Set结构映射出一个新的结构，然后赋值给原来的Set结构；另一种是利用Array.from方法
+          let set7 = new Set([1,2,3]);
+          set7 = new Set([...set7].map(val => val*2));
+          console.log(set7);
+
+          let set8 = new Set([1,2,3]);
+          set8 = new Set(Array.from(set,val => val*2));
       </script>
     </body>
 </html>

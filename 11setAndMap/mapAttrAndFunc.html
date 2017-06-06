@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>map实例的属性和方法</title>
+  </head>
+  <body>
+      <script type="text/javascript">
+          //1:size属性,返回Map结构成员的总数
+          let map1 = new Map();
+          map1.set('foo',true);
+          map1.set('bar',false);
+          console.log(map1.size);//2
+
+          //2:set(key,value)设置键名和键值，返回整个Map结构，如果key有值，该键值将会为更新
+          //set方法返回的是当前的Map对象,因此可以采用链式写法
+          let map2 = new Map().set(1,'a').set(2,'b').set(3,'c');
+
+          //3:get(key)方法，读取key对应的键值，找不到key，返回undefined
+
+          //4:has(key),返回一个布尔值，表示某个键是否在当前Map对象中
+
+          //5:delete(key)方法删除某个键，返回true，如果删除失败，返回false
+
+          //6:clear()方法清楚所有成员，没有返回值
+          let map6 = new Map();
+          map6.set('foo',true);
+          map6.set('bar',false);
+          console.log(map6.size);//2
+          map6.clear();
+          console.log(map6.size);//0
+
+
+          //遍历方法和对象。set结构的遍历方法一样 keys(),values(),entries(),forEach();
+          //但是需要注意的是：---------------------Map的遍历顺序是顺序插入
+          let map7 = new Map(['F','no'],['T','yes']);
+
+      </script>
+  </body>
+</html>

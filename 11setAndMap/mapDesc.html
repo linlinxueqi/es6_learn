@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Map的相关运用</title>
+  </head>
+  <body>
+    <script type="text/javascript">
+      //1:js的对象(Object)的本质上是键值对的集合（Hash结构),但是传统上只能用字符串当做键，这给它的使用带来了很大的限制
+
+      //2:Map数据结构，类似于对象，也是键值对的集合，但是‘键’的范围不限于字符串，各种类型的值（包括对象）
+      //如果需要“键值对”的数据结构，Map比Object更合适
+
+      let m = new Map();
+      let o = {p:'Hello World'};
+
+      m.set(o,'content');
+      console.log(m.get(o));//content
+      m.has(o);//true
+      console.log(m.delete(o));//true
+      console.log(m.has(o));//false
+
+      //m.set(键，值)这种方式可以添加成员，作为构造函数，Map也可以接受一个数组作为参数，该数组的成员是一个个表示键值对的数组
+      let map = new Map([
+        ['name','张三'],
+        ['title','author']
+      ]);
+      console.log(map.size);//2
+      console.log(map.get('name'));//true
+      console.log(map.has('name'));//张三
+      //Map构造函数接受数组作为参数，实际上执行了是下面的算法
+      let items = [
+        ['name','张三'],
+        ['title','author']
+      ];
+      let map1 = new Map();
+      items.forEach(([key,value]) => map1.set(key,value));
+      console.log(map1);
+      //不仅仅是数组，任何具有Iterator接口的数据结构，都可以当做Map构造函数的参数。这就是说Set和Map都可以用来生成新的Map
+      let set = new Set([
+        ['foo',1],
+        ['bar',2]
+      ]);
+      let m1 = new Map(set);
+      console.log(m1);
+      console.log(m1.get('foo'));//1
+      let m2 = new Map([['baz',3]]);
+      let m3 = new Map(m2);
+      console.log(m3);
+      console.log(m3.get('baz'));//3
+      //如果对同一个键多次赋值，后面的值将覆盖前面的值
+
+      //注意：-----------------
+      let map2 = new Map();
+      map2.set(['a'],555);
+      console.log(map2.get(['a']));//Undefined
+      //上面代码的set和get方法，表面是针对同一个键，但实际上这是两个值，内存地址是不一样的，因此get方法无法读取该键
+      //Map的键实际上是跟内存地址绑定的，只要内存地址不一样，就视为两个键。
+
+      // Map的键是一个简单类型的值（数字，字符串，布尔值），则只要两个值严格相等，Map将其视为一个键
+      // 0,-0是相等的,布尔值true和字符串true则是两个不同的键，undefined和null是不同的两个键
+      //NaN不严格相等于自身，但是Map将其视为同一个键
+      let map3 = new Map();
+      map3.set(-0,123);
+      console.log(map3.get(+0));//123
+
+      map3.set(true,1);
+      map3.set('true',2);
+      console.log(map3.get(true));//1
+
+      map3.set(undefined,3);
+      map3.set(null,4);
+      console.log(map3.get(undefined));//3
+
+      map3.set(NaN,123);
+      console.log(map3.get(NaN));
+    </script>
+  </body>
+</html>

@@ -110,6 +110,44 @@
             return instance[size];
           }
         }
+        var x =  new Collection();
+        console.log(Collection.sizeOf(x));
+        x.add('foo');
+        console.log(Collection.sizeOf(x));
+        console.log(Object.keys(x));//["0"]
+        console.log(Object.getOwnPropertyNames(x));//["0"]
+        console.log(Object.getOwnPropertySymbols(x));//[Symbol(size)];
+
+
+        // 8:Symbol.for(),可以接受一个字符串作为参数，然后搜索有没有以该参数作为名称的Symbol的值，如果有
+        // 就返回这个Symbol值，否则就新建并返回一个以该字符串为名称的Symbol值
+        var s1 = Symbol.for('foo');
+        var s2 = Symbol.for('foo');
+        console.log(s1===s2);//true
+
+        // Symbol()写法没有登记机制，所以每次调用都会返回一个不同的值
+        // Symbol.keyFor()方法返回一个已登记的Symbol类型的key
+        var s3 = Symbol.for('foo');
+        console.log(Symbol.keyFor(s3));//"foo"
+        var s4 = Symbol('foo');
+        console.log(Symbol.keyFor(s4));//undefined
+
+        //9:模块的Singleton模式
+        // 对于Node来说，模块文件可以看成是一个类。为了保证每次执行这个模块文件时，返回的都是同一个实例，可以把实例放在顶层对象global
+
+        //mod.js
+        function A(){
+          this.foo = 'hello';
+        }
+        // if(!global._foo){
+        //   global._foo = new A();
+        // }
+        // module.exports = global._foo;
+         //加载上面的模块
+        //  var aa = require('./mod.js');
+        //  console.log(aa.foo);
+
+
       </script>
     </body>
 </html>
