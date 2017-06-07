@@ -33,8 +33,104 @@
 
           //遍历方法和对象。set结构的遍历方法一样 keys(),values(),entries(),forEach();
           //但是需要注意的是：---------------------Map的遍历顺序是顺序插入
-          let map7 = new Map(['F','no'],['T','yes']);
+          let map7 = new Map([['F','no'],['T','yes']]);
+          for(let key of map7.keys()){
+            console.log(key);
+          }
+          for(let value of map7.values()){
+            console.log(value);
+          }
+          for(let item of map7.entries()){
+            console.log(item[0],item[1]);
+          }
+          //或者
+          for(let [key,value] of map7.entries()){
+            console.log(key,value);
+          }
+          for(let [key,value] of map7){
+            console.log(key,value);
+          }
+          //上面的代码中，最后三个实现的效果是一样的，表示Map结构的默认遍历器接口（Symbol.iterator），就是entries()方法
 
+          console.log(map7[Symbol.iterator] === map7.entries);//true
+
+
+          //Map结构转为数组结构，比较快速的方法是使用扩展运算符（...）
+          let map8 = new Map([[1,'one'],[2,'two'],[3,'three']]);
+          console.log([...map8.keys()]);//[1,2,3]
+          console.log([...map8.values()]);//['one','two','three']
+          console.log([...map8.entries()]);//[[1,'one'],[2,'two'],[3,'three']]
+          console.log([...map8]);//[[1,'one'],[2,'two'],[3,'three']]
+
+          //结合数组的map犯法，filter方法，可以实现Map的遍历和过滤（Map本身没有map和filter方法）
+          let map9  = new Map(
+              [...map8].filter(([k,v]) => k<3)
+          );
+          console.log(map9);
+          let map10 = new Map(
+            [...map8].map(([k,v]) => [k*2,'_'+v])
+          )
+          console.log(map10);
+
+          let reporter = {
+            report: function(key,value){
+              console.log("Key:%s,Value:%s",key,value);
+            }
+          };
+          map10.forEach(function(value,key,map10){
+            this.report(key,value);
+          },reporter);
+          //Key:2,Value:_one
+          //Key:4,Value:_two
+          //Key:6,Value:_three
+
+
+          //Map与其他数据结构的相互转换
+
+          //1:Map转为数组，使用扩展运算符，（...）;
+              // 数组转Map，将数组传入Map构造函数，就可以转为Map
+              let arr1 = [1,2];
+              console.log(new Map([arr1]));
+
+          //2:Map转为对象
+          // 如果所有Map的键都是字符串,它可以转为对象
+          function strMapToObj(strMap){
+            let obj = Object.create(null);
+            for(let [k,v] of strMap){
+              obj[k] = v;
+            }
+            return obj;
+          }
+          let myMap = new Map().set('yes',true).set('no',false);
+          console.log(strMapToObj(myMap));//{yes:true,no:false}
+          //对象转成Map
+          function objToStrMap(obj){
+            let strMap = new Map();
+            for(let k of Object.keys(obj)){
+              strMap.set(k,obj[k])
+            }
+            return strMap;
+          }
+          console.log(objToStrMap({yes:true,no:false}));
+
+          // 3.1json转为Map
+            function jsonToStrMap(jsonStr){
+              return objToStrMap(JSON.parse(jsonStr));
+            }
+            console.log(jsonToStrMap('{"yes":true,"no":false}'))
+          // 3.2:Map转为Json
+          // 分为两种情况：1Map的键名都是字符串，可以转为Json对象
+          function strMapToJson(strMap){
+            return Json.stringify(strMapToObj(strMap));
+          }
+          //另外一种情况，Map的键名有非字符串 ,可以选择转为数组Json
+
+          function mapToArrayjson(map){
+            return JSON.stringify([...map]);
+          }
+          let map11 = new Map().set(true,7).set({foo:3},['abc']);
+          console.log(mapToArrayjson(map11));
       </script>
   </body>
+
 </html>

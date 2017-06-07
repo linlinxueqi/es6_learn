@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>weakMap的相关介绍</title>
+  </head>
+  <body>
+    <div id="logo">
+
+    </div>
+    <script type="text/javascript">
+        //1:WeakMap与Map的区别有两点
+        // （1）：WeakMap只接受对象作为键名(null除外)，数值，和Symbol值作为WeakMa的键名，都会报错
+        //WeakMap键名所指向的对象，不计入垃圾回收机制
+        //所以如果你要往对象上添加数据，又不想干扰垃圾回收机制，就可以用WeakMap.
+
+        //WeakMap的专用场合就是：它的键所对应的对象，可能会在将来消失。WeakMap结构有助于防止内存泄露
+        let wm = new WeakMap();
+        let key = {};
+        let obj = {foo:1};
+        wm.set(key,obj);
+        obj = null;
+        console.log(wm.get(key));
+        //上面的代码中，键值还是正常使用。所以机制在WeakMap外部消除了Obj的引用，WeakMap内部的引用依然存在
+
+        //WeakMap可以用来解决内存泄露
+
+        //（2）：没有遍历操作,也没有size属性。无法清空
+
+
+        //2:WeakMap的用途  DOM节点作为键名
+        let myElement = document.getElementById('logo');
+        let myWeakMap = new WeakMap();
+        myWeakMap.set(myElement,{timesClicked:0});
+        myElement.addEventListener('click',function(){
+          let logoData = myWeakMap.get(myElement);
+          logoData.timesClicked++;
+        },false);
+        //一旦DOM节点删除，该状态就会自动消失，不存在内存泄露
+
+        //进一步说，注册监听事件的Listener对象，就很合适用WeakMap实现
+        let listener = new WeakMap();
+        listener.set(element1,handler1);
+        listener.set(element2,handler2);
+        element1.addEventListener('click',listener.get(element1),false);
+        element2.addEventListener('click',listener.get(element2),false);
+        //监听函数放在 WeakMap 里面。一旦 DOM 对象消失，跟它绑定的监听函数也会自动消失。
+
+
+        //WeakMap的另一个用处是部署私有属性
+        let _counter = new WeakMap();
+        let _action = new WeakMap();
+        class Countdown{
+          constructor(counter,action){
+            _counter.set(this,counter);
+            _action.set(this,action);
+          }
+          dec(){
+            let counter = _counter.get(this);
+            if(counter < 1) return;
+            counter--;
+            _counter.set(this,counter);
+            if(counter === 0){
+              _action.get(this)();
+            }
+          }
+        }
+        let c = new Countdown(2,()=>{console.log("DONE")});
+        c.dec();
+        c.dec();//DONE
+        //Countdown类的两个内部属性_counter和_action，是实例的弱引用，所以如果删除实例，它们也就随之消失，不会造成内存泄漏
+    </script>
+  </body>
+</html>
