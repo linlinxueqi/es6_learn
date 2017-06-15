@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>reflect概述</title>
+  </head>
+  <body>
+    <script type="text/javascript">
+      //1：reflect设计的目的
+
+      // （1）：将Object对象一些明显属于语言内部的方法（Object.defineProperty），放到reflect对象上
+      // 也就是说reflect对象上可以拿到语言内部的方法
+
+      // （2）：修改某些Object方法的返回结果，比如Object.defineProperty(obj,name,desc)在无法定义属性试
+      // 会抛出一个错误，而Reflect.defineProperty(obj,name,desc)则会返回false
+
+      try{
+        Object.defineProperty(target,property,attributes);
+        //success
+      }catch(e){
+        //failure
+      }
+        if(Reflect.defineProperty(target,property,attributes)){
+        //success
+        }else{
+        //failure
+        }
+
+        // （3）：让Object操作都变成函数行为，某些Object操作是命令式
+        // 比如 name in  obj 和 delete obj[name],而Reflect.has(obj,name),Reflect.deleteProperty(obj,name)让他们变成了函数行为
+
+          // （4）：reflect对象的方法与proxy对象的方法一一对应，让proxy对象可以方便的调用对应的reflect方法
+          // 完成默认行为，作为修改行为的基础，也就是说，不管proxy怎么修改默认行，总可以在reflect获取默认行为
+          Proxy({},{
+            set: function(target,name,value,receiver){
+              var success = Reflect.set(target,name,value,receiver);
+              if(success){
+                log('property' + name + 'on' + target + 'set to' + value);
+              }
+              return success;
+            }
+          });
+          //上面代码中，proxy拦截了target 对象属性默认行为
+          // 它采用reflect.set方法将值赋值给对象，确保原有行为，然部署额外功能
+
+          var loggedObj = new Proxy({},{
+            get(target,name){
+              console.log('get',target,name);
+              return Reflect.get(target,name);
+            },
+            deleteProperty(target,name){
+              console.log('delete' + name);
+              return Reflect.deleteProperty(target,name);
+            },
+            has(target,name){
+              console.log('has' + name);
+              return Reflect.has(target,name);
+            }
+          });
+
+          Function.prototype.apply.call(Math.floor,undefined,[1.75]);
+          Reflect.apply(Math.floor,undefined,[1.75]);
+    </script>
+  </body>
+</html>

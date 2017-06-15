@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>reflect方法介绍</title>
+  </head>
+  <body>
+    1:最近的观察模式不大懂，后面研究
+    <script type="text/javascript">
+      //1:Reflect.get(target,name,receiver)如果没有该属性，返回undefined
+
+      //如果name属性部署了读取函数（getter），则读取函数的this绑定receiver
+      var myObject = {
+        foo:1,
+        bar:2,
+        get baz(){
+          return this.foo + this.bar;
+        }
+      };
+      var myReceiverObject = {
+        foo:4,
+        bar:4
+      };
+      console.log(Reflect.get(myObject,'baz',myReceiverObject));
+
+      //2:Reflect.set(target,name,value,receiver)设置target对象的name属性等于value
+      var obj = {
+        foo:4,
+        set bar(value){
+          return this.foo = value;
+        }
+      };
+      console.log(obj.foo);
+      Reflect.set(obj,'foo',2);
+      console.log(obj.foo);
+      //如果name设置了赋值函数，则赋值函数的this绑定receiver
+      var receive = {
+        foo:0
+      };
+      Reflect.set(obj,'bar',1,receive);
+      console.log(obj.foo);//4
+      console.log(receive.foo);//1
+      //注意reflect.set会触发proxy.defineProperty拦截
+
+      //3:Reflect.has(obj,name)方法对应name in obj 里面的 in 运算符
+      var obj1 = {
+        foo:5,
+      };
+      console.log('foo' in obj1);
+      console.log(Reflect.has(obj1,'foo'));
+
+      //4:Reflect.deleteProperty(obj,name);
+
+      //5:Reflect.construct(targetm,args);
+
+
+
+
+      //proxy实现观察者模式
+      //观察者模式Observer mode指的是函数自动观察数据对象，一旦对象有变化，函数就会自动执行
+      let person = obserable({
+        name:'张三',
+        age:20
+      });
+      function print(){
+        console.log(`${person.name},${person.age}`);
+      };
+      observe(print);
+      person.name = '李四';
+    </script>
+  </body>
+</html>

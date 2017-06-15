@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>promise方法的相关介绍</title>
+  </head>
+  <body>
+    promise的应用可以稍后看
+    <script type="text/javascript">
+        var getJSON = function(url){
+          var promise = new Promise(function(resolve,reject){
+            var client = new XMLHttpRequest();
+            client.open('GET',url);
+            client.onreadystatechange = handler;
+            client.responseType = 'json';
+            client.setRequestHeader('accept','application/json');
+            client.send();
+            function handler(){
+              if(this.readyState !== 4){
+                return;
+              }
+              if(this.status === 200){
+                resolve(this.response);
+              }else{
+                reject(new Error(this.statusText));
+              }
+            };
+          });
+          return promise;
+        };
+        //2:promise.prototype.then();
+        // then()方法返回的是一个新的promise实例（不是原来的那个实例),因此可以写链式操作
+        getJSON("/post/1.json").then(
+          post => getJSON(post.commentURL)
+        ).then(
+          comments => console.log('Resoled: ',comments),
+          err => console.log("rejected:",err)
+        );
+
+        //2:promise.prototype.catche();是then(null,rejection)的别名，用来指定发生错误时的回调函数
+        getJSON('/posts.json').then(function(posts){}).catch(function(error){
+          console.log("发生错误！",error);
+        });
+
+        var promise = new Promise(function(resolve,reject){
+          throw new Error('test');//==reject(new Error('test'))
+          // ==try{throw new Error('test')}catch(e){reject(e)};
+        });
+        promise.catch(function(error){
+          console.log(error);
+        });
+        //promise对象的错误具有“冒泡”兴致，会一直向后传递，知道被捕获为止，也就是说，错误总是会被下一个catch所捕获
+
+        //跟传统的try/catch代码不同的是，如果没有使用catch方法指定错误处理的回调函数，promise对象
+        //抛出的错误不会传递到外层代码，即不会有任何反应
+        var someAsyncThing = function(){
+          return new Promise(function(resolve,reject){
+            //x没有声明，会报错
+            resolve(x + 2);
+          });
+        };
+        someAsyncThing().then(function(){
+            console.log('everything is great');
+        });
+
+
+        //3:promise.all()用于将多个promise实例，包装成一个新的Promise实例
+        var p = Promise.all([p1,p2,p3]);
+
+        // p的状态由p1、p2、p3决定，分成两种情况。
+
+        // （1）只有p1、p2、p3的状态都变成fulfilled，p的状态才会变成fulfilled，此时p1、p2、p3的返回值组成一个数组，传递给p的回调函数。
+
+        // （2）只要p1、p2、p3之中有一个被rejected，p的状态就变成rejected，此时第一个被reject的实例的返回值，会传递给p的回调函数。
+
+        var pro = [2,3,5,7,11,13].map(function(id){
+          return getJSON('/post/' + id + '.json');
+        });
+        Promise.all(pro).then(function(posts){}).catch(function(reason){});
+        //上面代码中，pro是包含含有六个Promise实例的数组，只有这个六个状态都变成fulfilled
+        // 或者其中一个变为rejected才会调用Promise.all方法后面的回调函数
+
+        //注意，如果作为参数Promise实例，自己定义了catch方法，那么它一旦被rejected，并不会触发Promise.all()的catch方法
+
+        //4:Promise.race()也同样是将多个Promise实例，包装秤
+        var p = Promise.all([p1,p2,p3]);
+        //只要p1、p2、p3之中有一个实例率先改变状态，p的状态就跟着改变。那个率先改变的 Promise 实例的返回值，就传递给p的回调函数。
+
+
+        //5:Promise.resolve()将对象转为Promise对象，Promise.resolve方法就起到这个作用
+
+        //6：Promise.reject()方法也会返回一个新的Promise实例，该实例状态为rejected
+        // Promise.reject()方法的参数，会原封不动地作为reject的理由，变成后续方法的参数。这一点与Promise.resolve方法不一致。
+
+        //7:应用
+
+
+
+    </script>
+  </body>
+</html>
