@@ -7,7 +7,158 @@
   <body>
     <script type="text/javascript">
       //1：部署iterator为各种不同的数据结构提供的统一的访问机制，任何数据结构只要部署Iterator接口，就可以完成遍历操作
-      
+
+      //2:iterator的作用有三个：一是为各种数据结构，提供一个统一的，简便的访问接口
+                              // 二是使得数据结构的成员能干按某种次序排列
+                              // 三是ES6创造了一种新的遍历命令for ... of 循环，iterator主要供for...of消费
+
+      //模拟next()方法返回值的例子
+      var it = makeIterator(['a','b']);
+      console.log(it);//返回一个遍历器生成对象
+      console.log(it.next());//{value:'a',done:false}
+      console.log(it.next());//{value:'b',done:false}
+      console.log(it.next());//{value:undefined,done:true}
+      function makeIterator(array){
+        var nextIndex = 0;
+        return {
+          next : function(){
+            return nextIndex < array.length ?
+            {value:array[nextIndex++],done:false}:
+            {value:undefined,done:true}
+          }
+        };
+      }
+
+      //由于iterator只是把接口规格加到数据结构之上，所以遍历器与它所遍历的那个数据结构，实际上是分开的
+      //完全可以写出没有对应数据结构的遍历器对象，或者说用遍历器模拟出数据结构
+      var im = idMaker();
+      console.log(im.next().value);
+      console.log(im.next().value);
+      console.log(im.next().value);
+      function idMaker(){
+        var index = 0;
+        return {
+          next:function(){
+            return {value:index++,done:false};
+          }
+        };
+      };
+
+      //重要：---------------------------
+      //有些数据结构原生具备Iterator接口，即不用任何处理，就可以被for...of循环遍历，因为这些数据结构原生部署了Symbol.Iterator
+      //凡是部署了Symbol.iterator属性的数据结构，就称部署了遍历器接口，调用这个接口，返回一个遍历器对象
+
+      //如果使用Typescript写法，遍历器接口（Iterator），指针对象（Iterator）和next()方法返回值规格如下
+      // interface Iterator{
+      //   [Symbol.iterator]():Iterator,
+      // };
+
+      // interface Iterator{
+      //   next(value?:any):IterationResult,
+      // }
+      // interface IterationResult{
+      //   value : any,
+      //   done : boolean,
+      // }
+
+
+      //3:数据结构的默认Iterator接口
+      let arr = [1,2,3];
+      let iter = arr[Symbol.iterator]();
+      console.log(iter);
+
+      class RangIterator{
+          constructor(start,stop){
+            this.value = start;
+            this.stop = stop;
+          }
+          [Symbol.iterator](){return this;}
+          next(){
+            var value = this.value;
+            if(value < this.stop){
+              this.value++;
+              return {done:false,value: value};
+            }
+            return {done:true,value:undefined};
+          }
+      }
+
+      function range(start,stop){
+        return new RangIterator(start,stop);
+      }
+      for(var value of range(0,3)){
+        console.log(value);//0,1,2
+      }
+
+      //下面是通过遍历器实现指针结构的例子
+      function Obj(value){
+        this.value = value;
+        this.next = null;
+      };
+      Obj.prototype[Symbol.iterator] =  function(){
+        var iterator = {
+          next : next
+        };
+        var current = this;
+
+        function next(){
+          if(current){
+            var value = current.value;
+            current = current.next;
+            return {
+              done:false,
+              value: value
+            };
+          }else{
+            return {
+              done: true
+            };
+          }
+        }
+        return iterator;
+      }
+      var one = new Obj(1);
+      var two = new Obj(2);
+      var three = new Obj(3);
+
+      one.next = three;
+      three.next = two;
+      for(var i of one){
+        console.log(i);//1,3/2
+      }
+
+    //对于类似数组的对象（存在数值键名和Length属性），部署iterator接口，有一个简便的方法，就是Symbol.iterator方法直接引用数组的iterator接口
+     let iter1 = {
+       0:'a',
+       1:'b',
+       2:'c',
+       length:3,
+       [Symbol.iterator]:Array.prototype[Symbol.iterator]
+     };
+     for(let item of iter1){
+       console.log(item);//'a','b','c'
+     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </script>
   </body>
 </html>
