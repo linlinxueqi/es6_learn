@@ -139,6 +139,14 @@
        console.log(item);//'a','b','c'
      }
 
+     //如果Symbol.iterator的方法对应的不是遍历器生成函数（即会返回一个遍历器对象），解释引擎将会报错
+
+     var $iterator = iterable[Symbol.iterator]();
+     var $result = $iterator.next();
+     while(!$result.done){
+       var x = $result.value;
+       $result = $iterator.next();
+     }
 
 
 

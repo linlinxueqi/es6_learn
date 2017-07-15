@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>class的简介</title>
+  </head>
+  <body>
+      <script type="text/javascript">
+          //1:es6的class可以看做只是一个语法糖，新的class写法只是让对象原型的写法更加清晰，更像面向对象
+          class Point{
+            constructor(x,y){
+              this.x = x;
+              this.y = y;
+            }
+            toString(){
+              return '('+this.x +','+this.y +')';
+            }
+          }
+          //方法之间不需要逗号分隔，加了会报错。定义类的方法的时候，前面不需要加上
+          console.log(typeof Point);//function
+          console.log(Point === Point.prototype.constructor);//true
+          //类的数据类型就是函数，类本身就指向构造函数。
+          var point = new Point(2,3);
+          console.log(point.toString());
+          console.log(point.hasOwnProperty('x'));//true
+          console.log(point.hasOwnProperty('toString'));//false
+
+
+          // 2:构造函数的prototype属性，在 ES6 的“类”上面继续存在。
+          // 事实上，类的所有方法都定义在类的prototype属性上面
+
+          // 类的方法都定义在prototype对象上面，也可以直接添加新方法，Object.assign方法可以很方便地一次向类添加多个方法
+          function toString(){};
+          function toValue(){};
+          Object.assign(Point.prototype,{
+            //toString(){},
+            //toValue(){}
+          });
+
+          var Point1 = function(x,y){};
+          Point1.prototype.toString = function(){};
+          console.log(Object.keys(Point1.prototype));//toString
+          console.log(Object.keys(Point.prototype));//[]
+          //toString方法是Point类内部定义的方法，它是不可枚举的。这一点与 ES5 的行为不一致。
+
+          //3:类和模块的内部，默认就是严格模式，所以不需要使用use strict指定运行模式
+          //考虑到未来所有的代码，其实都是运行在模块之中，所以 ES6 实际上把整个语言升级到了严格模式
+
+
+
+          //4:constructor方法
+          // constructor方法默认返回实例对象（即this），完全可以指定返回另外一个对象
+          class Foo{
+            constructor(){
+              return Object.create(null);
+            }
+          }
+          console.log(new Foo() instanceof Foo);//false
+          //类必须使用new调用，否则会报错。这是它跟普通构造函数的一个主要区别，后者不用new也可以执行
+
+
+          //5:类生成的实例对象
+          //与es5一样。实例的属性除非显示定义在其本身（即定义在this对象上），否则都是定义在原型上（即class上）
+
+
+          //类的所有实例共享一个原型对象
+          var p1 = new Point();
+          var p2 = new Point();
+          console.log(p1._proto_ === p2._proto_);
+
+          // 私有方法和私有属性的表示方法
+
+          //6:class表达式
+          let myClass =class Me{
+            getClassName(){
+              return Me.name;
+            }
+          }
+          //类的名字是myClass不是Me，Me只在Class内部代码可用，指代当前类
+
+          //采用Class表达式，可以写出立即执行Class
+          let person = new class{
+            constructor(name){
+              this.name = name;
+            }
+            sayName(){
+              console.log(this.name);
+            }
+          }("张三");
+          person.sayName();//张三
+
+          
+      </script>
+  </body>
+</html>
