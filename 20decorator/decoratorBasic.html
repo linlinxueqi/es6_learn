@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>类在修饰</title>
+</head>
+
+<body>
+  <script>
+    //1:修饰属性
+
+    // @decorator
+    // class A {}
+    //等同于
+    // class A {}
+    // A = decorator(A) || A;
+    //注意，修饰器对类在行为改变，是代码编译时发生在，不是在运行时
+
+    //修饰器函数在第一个参数，就是所要修饰在目标类
+    function tastable(target){}
+
+    //如果觉得一个参数不够用，可以在修饰器外面再封装一层函数
+    function tastable1(istarget){
+      return function(target){
+        target.isTastable = isTastable;
+      }
+    }
+    @tastable(true)
+    class MyTestableClass{}
+    console.log(MyTestableClass.isTastable);//true
+
+    @tastable(false)
+    class MyTestableClass{}
+    console.log(MyTestableClass.isTastable);//false
+
+    //前面的例子是为类添加一个静态属性，如果想添加实例属性，可以通过目标类的prototype对象操作
+
+    function testable2(target){
+      target.prototype.isTastable = true;
+    }
+    @testable2
+    class MyTestableClass2{}
+    let  obj = new MyTestableClass2();
+    obj.isTastable //true
+
+    export function mixins(...list){
+      return function(target){
+        Object.assign(target.prototype,...list );
+      }
+    }
+
+    import { mixins } form './mixins'
+    let  Foo = {
+      foo(){console.log('foo')}
+    };
+
+    @mixins(Foo);
+    class MyClass{}
+    let obj = new MyClass();
+    obj.foo();
+
+    //实际开发中，react与redux库结合使用时，常常需要写成下面这样
+    class  MyReactComponent extends React.Component{};
+    export default connect(mapStateToProps,mapDispatchToProps)(MyReactComponent);
+    //有了修饰器，就可以写成下面的代码
+    @connent(mapStateToProps,mapDispatchToProps);
+    export default class MyReactComponent  extends React.Component{};
+
+    //2:方法的修饰
+    class Person{
+      @readonly
+      name(){return `${this.first} ${this.last}`};
+    }
+    //上面的代码，修饰器readonly用来修饰类的name方法
+
+    //此时修饰器函数，一共可以接受三个参数，
+    //第一个参数是所要修饰的目标对象，第二个参数是所要修饰的属性名，
+    //第三个参数是该属性的描述对象
+    function readonly(target,name,descriptor){
+      //descriptor对象原来的值如下
+      //{
+      //  value:specifiedFunction,
+      //  enumerable:false,
+      //  configurable:true,
+      //  writable:true
+      //}
+      descriptor.writable = false;
+      return descriptor;
+    }
+
+    readonly(Person.prototype,'name',descriptor);
+    //类似于
+    Object.defineProperty(Person.prototype,'name',descriptor);
+
+    //修改属性描述对象的enumerable属性，使得该属性不可遍历
+    class Person1{
+      @nonenumerable
+      get kidCount(){return this.children.length;}
+    }
+    function nonenumerable(target,name,descriptor){
+      descriptor.enumerable = false;
+      return descriptor;
+    }
+
+    //@log修饰器，可以起到输出日志的作用
+    class Math{
+      @log;
+      add(a,b){
+        return a + b;
+      }
+    }
+    function log(target,name,descriptor){
+      var oldValue = descriptor.value;
+      descriptor.value = function(){
+        console.log(`calling "${name}" with`,arguments);
+        return oldValue.apply(null,arguments);
+      };
+      return descriptor;
+    }
+    //上面的代码中，@log修饰器的作用就是在执行原始的操作之前，执行一次console.log，从而达到输出日志的目的
+    let math = new Math();
+    math.add(2,4);
+
+    //修饰器有注释的作用
+    @testable
+    class Person2{
+      @readonly
+      @nonenumerable
+      name(){
+        return `${this.first} ${this.last}`
+      }
+    }
+    //上面的代码中，person2类是可测试的，而name方法是只读和不可枚举的//为什么是不可枚举的？？？
+
+    //如果同一个方法有多个修饰器，会像剥洋葱一样，先从外到内进入，然后内向外至执行
+    function dec(id){
+      console.log('evaluated',id);
+      return (target,property,decriptor) => console.log('executed',id);
+    }
+
+    class Example{
+      @des(1);
+      @des(2);
+      method(){}
+    }
+    //evaluated 1
+    //evaluated 2
+    //executed 2
+    //executed 1
+    //上面代码中，外层修饰器，@des(1)先进入，内层修饰器@des(2)先执行
+
+    //3：为什么修饰器不能用于函数(修饰器只能用于类和类的方法，不能用于函数，因为存在函数提升)
+    var counter = 0;
+    var add = function(){
+      counter++;
+    };
+    @add
+    function foo(){}
+    //意图是执行后counter等于1，但是实际结果是counter等于0，因为函数提升，是的实际执行的代码是这样的
+    @add
+    function foo(){}
+    var counter;
+    var add;
+    counter = 0;
+    add = function(){counter++;};
+
+    var readOnly = require("some-decorator");
+    @readonly
+    function fooo(){}
+    //实际执行顺序
+    var readOnly;
+    @readOnly
+    function foo(){}
+    readOnly = require("some-decorator");
+    //由于存在函数提升，使得修饰器不能用于函数。类是不会提升的，所以就没有这方面的问题
+
+    //如果一定要修饰函数，可以采用高阶函数的形式直接执行（这个不是很懂）
+    function doSomething(name){
+      console.log('Hello,'+name);
+    }
+    function loggingDescorator(wrapped){
+      return function(){
+        conole.log('Starting');
+        let result = wrapped.apply(this,arguments);
+        console.log('Finished');
+        return result;
+      }
+    }
+    let warpped = loggingDescorator(doSomething);
+
+    //4：core-decorators.js
+    //是一个第三方模块提供了几个常见的修饰器吗，通过它可以更好地理解 修饰器
+    //@autobind修饰器使得 方法中的this对象，绑定原始对象
+    import {autobind} from 'core-decorators';
+    class Person{
+      @autobind
+      getPerson (){
+        return this;
+      }
+    }
+    let person = new Person();
+    let getPerson = person.getPerson;
+    console.log(getPerson() === person);
+
+    //@override
+    //@override修饰器检查子类的方法，是否正确覆盖了父类的同名方法，如果不正确会报错
+    import{override}from 'core-decorators';
+    class Parent{
+      speak(first,second){}
+    }
+    class Child extends Parent{
+      @override
+      speak(){
+
+      //@deprecate
+      //@deprecate修饰器在 控制台显示一条警告，表示该方法将废除
+      import{deprecate}from 'core-decorators';
+      class Person{
+        @deprecate
+        facepalm(){}
+        @deprecate('we stopped facepalming')
+        facepalmHald(){}
+      }
+
+      //@supperessWarnings
+      //@supperessWarnings修饰器decoraated修饰器导致console.warn()调用。但是，异步代码发出的调用除外
+
+      //5：使用修饰器实现自动发布事件
+      //使得的对象的方法 被调用时，自动发出一个事件
+      import postal from "postal/lib/postal.lodash";
+      export default function publish(topic,channel){
+        return function(target,name,descriptor){
+          let fn = descriptor.value;
+
+        }
+      }
+  </script>
+</body>
+
+</html>
