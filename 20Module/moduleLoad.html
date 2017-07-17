@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>module的加载实现</title>
+  </head>
+  <body>
+      <script type="text/javascript">
+          //1:浏览器加载，浏览器异步加载脚本，是的脚本加载时，页面及时相应
+          // 两种异步加载语法,script标签打开defer或者async属性，脚本就会异步加载
+          // 渲染引擎遇到这一行命令，就会开始下载外部脚本，但不会等它下载和执行，而是直接执行后面的命令。
+          <script src = "path/to/myModule.js" defer>
+          <script src = "path/to/myModule.js" async>
+          //defer是“渲染完再执行”，async是“下载完就执行”
+          //另外，如果有多个defer脚本，会按照他们在页面出现的顺序加载，而多个async脚本是不能保证加载顺序的
+
+
+          // 2：加载规则
+          // 浏览器加载es6模块，也使用script标签，但是要加入type="module"属性
+          <script src="foo.js" type="module">== <script type="module" src="foo.js" defer>
+          //浏览器对于type=”module"的script都是异步加载的，不会造成堵塞浏览器，等同于打开了script标签中的defer属性
+
+
+          //3:es6模块与commonJs模块的差异
+          // es6模块与CommonJs模块模块的不同：
+          // （1）commonJs模块输出的是一个值的拷贝，es6模块输出的是值的引用
+            //  （2）commonJs模块是运行时加载，es6模块是编译时输出接口
+           // (3)ES6 模块之中，顶层的this指向undefined；CommonJS 模块的顶层this指向当前模块，这是两者的一个重大差异
+          //lib.js
+          var counter = 3;
+          function incCounter(){
+            counter++;
+          }
+          module.exports = {
+            counter:counter,
+            incCounter:incCounter
+          };
+          //main.js
+          var mod = require('./lib');
+          console.log(mod.counter);//3
+          mod.counter;
+          console.log(mod.counter);//3
+          // lib.js模块加载后，它的内部变化就影响不到输出的mod.counter了。
+          // 这个是因为mod.counter是一个原始类型的值，会被缓存，除非写出一个函数，才能得到内部变动后的值
+          // lib.js
+          var counter = 3;
+          function incCounter(){
+            counter++;
+          }
+          module.exports = {
+            get counter(){return counter},
+            incCounter:incCounter
+          }
+
+          //es6模块是动态引用，并且不会缓存值，模块里面的变量绑定其所在的模块
+          // m1.js
+          export var foo = 'bar';
+          setTimeout(()=> foo = 'baz',500);
+          //m2.js
+          import {foo}from './m1.js';
+          console.log(foo);
+          setTimeout(()=>console.log(foo),500);
+          // ES6 输入的模块变量，只是一个“符号连接”，所以这个变量是只读的，对它进行重新赋值会报错。可以添加属性，但是不能重新赋值
+
+          // export通过接口，输出的是同一个值，不同的脚本加载这个接口，得到的都是同样的实例
+          //mod.js
+          function C(){
+            this.sum = 0;
+            this.add = function(){
+              this.sum +=1;
+            };
+            this.show = function(){
+              console.log(this.sum);
+            }
+          }
+          export let c = new C();
+          //x.js
+          import {c}from './mod';
+          c.add();
+          //y.js
+          import {c} from './mod';
+          c.show();
+          //main.js
+          import './x';
+          import './y';//输出的是1
+
+
+          //3:node加载
+          // Node 对 ES6 模块的处理比较麻烦，因为它有自己的 CommonJS 模块格式，与 ES6 模块格式是不兼容的。
+          // 目前的解决方案是，将两者分开，ES6 模块和 CommonJS 采用各自的加载方案。
+          export {};
+          // 上面的命令并不是输出一个空对象，而是不输出任何接口的 ES6 标准写法。
+          // 在静态分析阶段，一个模块脚本只要有一行import或export语句，Node 就会认为该脚本为 ES6 模块，否则就为 CommonJS 模块。
+          // 如果不输出任何接口，但是希望被 Node 认为是 ES6 模块，可以在脚本中加一行语句。export {};
+
+
+      </script>
+  </body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>模块的基本介绍</title>
+  </head>
+  <body>
+      <script type="text/javascript">
+          //es6模块的设计思想，是尽量的静态化，使得编译试就能确定模块的依赖关系，以及输入和输出变量
+
+          //CommonJs和AMD模块，都只能在运行时确定这些东西，CommonJs模块就是对象，输入时必须查找对象属性
+          let { stat, exists, readFile} = require('fs');
+          //等同于
+          let _fs = require('fs');
+          let stat = _fs.stat;
+          let exists = _fs.exists;
+          let readFile = _fs.readFile;
+          //上面的代码的实质是整体加载fs模块（即加载fs的所有方法），生成一个对象（_fs），
+          // 然后从这个对象上面读取3个方法。这种加载称为“运行时加载”,因为只有运行时才能得到这个对象，导致没有办法在编译时做静态优化
+
+          //es6不是对象，而是通关export命令显示指定输出的代码，载通关import命令输入
+          import {stat,exists,readFile} from 'fs';
+          //上面的代码实质是fs模块加载3个方法，其他方法不加载。
+          //这种加载称为“编译时加载”或者静态加载，即 ES6 可以在编译时就完成模块加载，效率要比 CommonJS 模块的加载方式高。
+          // 当然，这也导致了没法引用 ES6 模块本身，因为它不是对象。
+
+          //由于es6模块是编译时加载，使得静态分析成为可能。有了它，就能进一步拓宽javascript的语法，
+          //比如：引入宏（macro）和类型检验（type system）这些只能靠静态分析实现的功能
+
+          //静态加载带来的各种好处，es6模块还有以下好处：
+          // （1）不再需要对象作为命名控件（比如Math对象）,未来这些功能可以通过模块提供。
+          //（2）不再需要UMD模块格式了，将来服务器和浏览器都会支持es6模块格式。
+          //（3）将来浏览器的新api就能用模块格式提供，不再必须做成全局变量或者navigator对象的属性
+
+          //在es6模块中，顶层的this指向，undefined，即不应该在顶层代码使用this;
+
+
+          //1:export 命令,一个模块就是一个独立的文件，该文件内部的所有变量，外部无法获取，就必须用export输出该变量
+          export var firstName = "michael";
+          export var lastName = 'jaclson';
+          export var year = 1958;
+          //等同于
+          var firstName = "michael";
+          var lastName = 'jaclson';
+          var year = 1958;
+          export {firstName,lastName,year};//这种悠闲考虑，因为这样可以在脚本尾部，一眼就清楚输出了哪些变量
+
+          //输出函数和类
+          export function multiply(x,y){
+            return x * y;
+          }
+          //通常情况下，export输出的变量就是本来的名字，但是可以使用as关键字重命名。
+          function v1(){};
+          function v2(){};
+          export {
+            v1 as streamV1,
+            v2 as streamV2
+          }
+          //他们的实质是，在接口名和模块内部变量之间，建立一一对应的关系
+          //另外，export语句输出的接口，与其对应的值是动态绑定关系，即通过该接口，可以取到模块内部实时的值
+          //这一点与CommonJS规范不同，CommonJs模块输出的是值的缓存，不存在动态更新
+
+
+          // export命令可以出现在模块的任何位置，只要处于模块顶层就可以。如果处于块级作用域内，就会报错，下一节的import命令也是如此。
+          // 这是因为处于条件代码块之中，就没法做静态优化了，违背了ES6模块的设计初衷。 ？？？？？为什么呢？？？？
+
+          // 2：import命令
+          import {firstName,lastName,year}from './profile';
+          //或者
+          import {firstName as surName} form './profile';
+          function setName(element){
+            element.textContent = firstName + '' + lastName;
+          }
+
+          import {myMethod} from 'util';
+          //util是模块文件名，由于不带有路径，必须通过配置，告诉引擎怎么取到这个模块。
+
+          //由于import是静态执行，所以不能使用表达式和变量,这些只有在运行时才能得到结果的语法结构
+          //报错，因为用了if结构，这些值在静态分析阶段，是无法得到值的
+          if(x === 1){
+            import {foo} from 'module1';
+          }else{
+            import {foo}from 'module2';
+          }
+          // 如果多次重复执行同一句import语句，那么只会执行一次，而不会执行多次
+          import{foo}from 'myModule';
+          import{bar}from 'myModule';
+          //等同于
+          import {foo,bar}from 'myModule';
+          //虽然foo和bar在两个语句中加载，但是它们对应的是同一个myModule实例。也就是说，import语句是 Singleton 模式。
+
+
+          //3:模块的整体加载，用星号（*）指定一个对象，所有输出值都加载在这个对象上面
+          //circle.js
+          export function area(radius){
+            return Math.PI * radius * radius;
+          }
+          export function circleFerence(radius){
+            return 2 * Math.PI * radius;
+          }
+          import {area,circleFerence}from './circle';
+          //注意指定加载方法，整体加载写法如下
+          import * as circle from './circle';
+
+
+          //4:export default 命令
+          export default function foo(){
+            console.log('foo');
+          }
+          //或者
+          function foo(){
+            console.log('foo');
+          }
+          export default foo;
+          //这种写法，不需要使用大括号，包括import输入的时候，用任意名字指定该函数,并且不使用大括号
+          import customeName from './default';
+
+          // export default 命令用于指定模块的默认输出。显然，一个模块只能有一个默认输出，因此export default命令只能使用一次
+          // 所以import命令后面才不用加大括号，因为只可能对应一个方法
+
+          //5：export 与 import 的复合写法，如果一个模块之中先输入后输出同一个模块，import语句可以与export写在一起
+          export {foo,bar}from 'myModule';
+          //等同于
+          import {foo,bar} from 'myModule';
+          export{foo,bar};
+          //模块接口改名和整体输出，也可以采用这种写法
+          //接口改名
+          export {foo as myFoo} from 'myModule';
+          //整体输出
+          export * from 'myModule';
+          //默认接口写法
+          export {default}from 'foo';
+          //具体接口改为默认接口的写法
+          export {es6 as default}from './someModule';
+          import {es6} from './someModule';
+          export default es6;
+
+          //6:模块的继承
+          // 假设一个circleplus模块，继承了circle模块
+          // circleplus.js
+          export * from 'circle';
+          export var e = 2.44;
+          export default function(x){
+            return Math.exp(x);
+          }
+
+          //7:跨模块常量
+          // constants.js模块
+          export const A = 1;
+          export const B = 3;
+          export const C = 4;
+          //test1.js
+          import * as constants from './constants';
+          console.log(constants.A);//1
+          //test2.js
+          import{A,B}from './constants';
+          console.log(A);//1
+
+          //如果要使用的常量非常多，可以建立一个专门的constants目录，将各种常量写在不同的文件里面，保存在该目录下
+          //constants/db.js
+          export const db = {
+            url:'http://my.couchdbserver.local:5984',
+            admin_username:'admin'
+          };
+          //constants/user.js
+          export const users = ['root','admin','staff'];
+          //将这些输出常量，合并在index.js里面
+          export {db}from './db';
+          export {users}from'./users';
+          //使用的时候，直接加载index.js就可以了
+          import{db,users}from './constants';
+
+          //8:import()方法
+          // 在语法上，条件加载就不可能实现。如果import命令要取代 Node 的require方法，这就形成了一个障碍。
+          // 因为require是运行时加载模块，import命令无法取代require的动态加载功能,但是import是同步加载
+
+          let main = document.querySelector('main');
+          import (`./section-modules/${someVariable}.js`)
+            .then(module =>{
+              module.loadPageInto(main);
+            })
+            .catch(err => {
+              main.textContent = err.message;
+            });
+
+            // （1）：按需加载
+            button.addEventListener('click',event => {
+              import('./dialogBox.js').then(dialogBox => {
+                dialogBox.open();
+              })
+              .catch(error => {})
+            });
+            //import()方法放在click事件的监听函数之中，只有用户点击了按钮，才会加载这个模块。
+
+            // (2)：条件加载
+            if(condition){
+              import('./moduleA').then(...);
+            }else{
+              import('./moduleB').then(...);
+            }
+
+            //(3):动态模块路径
+            // import()允许模块路径动态生成
+            import(f()).then(...);
+
+            //注意点
+            // (1)
+            // import()加载模块成功以后，这个模块会作为一个对象，当作then方法的参数。因此，可以使用对象解构赋值的语法，获取输出接口。
+            import('./myModule.js').then(({export1,export2}) => {...});
+            //export1和export2都是myModule.js的输出接口，可以解构获得
+
+            // (2)如果模块有default输出接口，可以用参数直接获得
+            import('./myModule.js').then((myModule)=>{console.log(myModule.default)});
+            import('./myModule.js').then(({default:theDefault}) => {console.log(theDefault)});
+
+            //(3)：同时加载多个模块，可以采用下面的写法
+            Promise.all([
+              import('./module1.js'),
+              import('./module2.js'),
+              import('./module3.js')
+            ]).then(([module1,module2,module3])=>{...});
+
+            //(4):import也可以用在async函数之中
+            async function main(){
+              let myModule = await import('./myModule.js');
+              let {export1,export2} = await import('./myModule.js');
+              let [module1,module2,module3] = await Promise.all([
+                import('./moduel1.js'),
+                import('./moduel2.js'),
+                import('./moduel3.js'),
+              ]);
+            }
+            main();
+      </script>
+  </body>
+</html>
