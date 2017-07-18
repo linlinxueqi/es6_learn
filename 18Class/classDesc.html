@@ -89,6 +89,114 @@
           }("张三");
           person.sayName();//张三
 
+          // 7：不存在提升变量(类不存在变量提升）
+          // 8:私有方法
+          // (1):一种做法是在命名上加以区别
+          class Widget {
+            //公有方法
+            foo(baz){
+              this._bar(baz);
+            }
+            //私有方法
+            _bar(baz){
+              return this.snaf = baz;
+            }
+          }
+          // _bar方法前面的下划线，表示这是一个只限于内部使用的私有方法。但是，这种命名是不保险的，在类的外部，还是可以调用到这个方法。
+
+          // （2）：另外一种方法是将私有方法移除模块，因为模块内部的素有方法都是对外可见的
+          class Widget {
+            foo(baz){
+              bar.call(this,baz);
+            }
+          }
+          function bar(baz){
+            return this.snaf = baz;
+          }
+
+          // (3):利用Symbol值的唯一性，将私有方法的名字命名为一个Symbol值
+          const bar = Symbol('bar');
+          const snaf = Symbol('snaf');
+
+          export default class myClass{
+            // 公有方法
+            foo(baz) {
+              this[bar](baz);
+            }
+            // 私有方法
+            [bar](baz) {
+              return this[snaf] = baz;
+            }
+          };
+
+
+          // 9：私有属性(私有属性表示方法：属性名之前，使用#表示)
+          class Point {
+            #x;
+            constructor(x = 0){
+              #x = +x;//==this.#x = +x;
+            }
+            get x(){return #x}
+            set x(value){#x = +value}
+          }
+          // #x就表示私有属性x，在Point类之外是读取不到这个属性的。
+          // 还可以看到，私有属性与实例的属性是可以同名的（比如，#x与get x())
+
+          //10：class的取值函数（getter）和存值函数(setter)
+          // 存值函数和取值函数是设置在属性的descriptor对象上的
+          class CustomHTMLElement{
+            constructor(element){
+              this.element = element;
+            }
+            get html(){
+              return this.element.innerHTML;
+            }
+            set html(value){
+              this.element.innerHTML = value;
+            }
+          }
+          var descriptor = Object.getOwnPropertyDescriptor{
+            CustomHTMLElement.prototype,"html"
+          };
+          "get" in descriptor//true;
+
+
+          //11:Class的静态方法方法
+          // 类相当于实例的原型，所有在类中定义的方法，都会被实例继承。
+          // 如果在一个方法前，加上static关键字，就表示该方法不会被实例继承，而是直接通过类来调用，这就称为“静态方法”。
+          class Foo{
+              static classMethod(){
+                return 'hello';
+              }
+          }
+          Foo.classMethod();//Hello
+          var foo = new Foo();
+          foo.classMethod();//报错
+
+          // 父类的静态方法，可以被子类继承
+          class Foo {
+            static classMethod() {
+              return 'hello';
+            }
+          }
+          class Bar extends Foo {
+          }
+          Bar.classMethod() // 'hello'
+
+          // 静态方法也可以从super对象上调用
+          class Foo {
+            static classMethod() {
+              return 'hello';
+            }
+          }
+          class Bar extends Foo {
+            static classMethod() {
+              return super.classMethod() + ', too';
+            }
+          }
+          Bar.classMethod() // "hello, too"
+
+          // 12：class的静态属性和实例属性
           
       </script>
   </body>
