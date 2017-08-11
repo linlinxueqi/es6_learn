@@ -9,6 +9,216 @@
           // 1:传统的异步编程方法
           // 回调函数，事件监听，发布/订阅,promise对象
 
+          //Promise 对象就是为了解决这个问题而提出的。它不是新的语法功能，而是一种新的写法，
+          // 允许将回调函数的嵌套，改成链式调用。 采用 Promise，连续读取多个文件，写法如下
+          var readFile = require('fs-readfile-promise');
+          readFile(fileA)
+          .then(function(data){
+            console.log(data.toString());
+          })
+          .then(function(){
+            return readFile(fileB);
+          })
+          .then(function(data){
+            console.log(data.toString());
+          })
+          .catch(function(err){
+            console.log(err);
+          });
+          // Promise 的最大问题是代码冗余，原来的任务被 Promise 包装了一下，不管什么操作，一眼看去都是一堆then，原来的语义变得很不清楚。
+
+
+          //2:generator函数
+            // 协程有点像函数，又有点像线程。它的运行流程大致如下。
+            // 第一步，协程A开始执行。
+            // 第二步，协程A执行到一半，进入暂停，执行权转移到协程B。
+            // 第三步，（一段时间后）协程B交还执行权。
+            // 第四步，协程A恢复执行
+
+            function* asyncJob(){
+              var f = yield readFile(fileA);
+            }
+
+            // generator函数的数据交换和错误处理
+            // 作为异步编程的完整解决方案：函数体内外的数据交换和错误处理机制。
+            // next返回值的value属性，是 Generator 函数向外输出数据；next方法还可以接受参数，向 Generator 函数体内输入数据。
+            function* gen(x){
+              var y = yield x + 2;
+              return y;
+            }
+            var g = gen(1);
+            g.next() // { value: 3, done: false }
+            g.next(2) // { value: 2, done: true }
+
+            // generator函数内部还可以部署错误处理代码，捕获函数踢外抛出的错误
+            function* gen(x){
+              try{
+                var y = yield x + 2;
+              }catch(e){
+                console.log(e);
+              }
+              return y;
+            }
+            var g = gen(1);
+            g.next();
+            g.throw('出错了');//出错了
+
+
+          // 3：异步任务的封装
+          var fetch = require('node-fetch');
+          function* gen(){
+            var url = 'http://api.github.com/user/github';
+            var result = yield fetch(url);
+            console.log(result.bio);
+          }
+          //执行这段代码的方法如下
+          var g = gen();
+          var result = g.next();
+          result.value.then(function(data){
+            return data.json();
+          }).then(function(data){
+            g.next(data);
+          });
+
+
+        //4:thunk函数的含义
+        // 编译器的“传名调用”实现，往往将参数放到一个临时函数之中，再将这个临时函数传入函数体，这个临时函数就叫做thunk函数
+        function f(m){
+          return m*2;
+        }
+        f(x+5);
+        //等同于
+        var thunk = function(){
+          return x + 5;
+        };
+        function f(thunk){
+          return thunk()*2;
+        }
+
+        //js语言的thunk函数,thunk函数替换的不是表达式，
+        // 而是多参数函数，将其替换成一个只接受回调函数作为参数的单参数函数
+        fs.readFile(fileName,callback);
+        var Thunk = function (fileName){
+          return function(callback){
+            return fs.readFile(fileName,callback);
+          }
+        }
+        var readFileThunk = Thunk(fileName);
+        function readFileThunk (callback){
+          return fs.readFile(fileName,callback);
+        }//相当于返回一个匿名函数，不会执行
+        readFileThunk(callback);
+
+
+
+        // fs模块的readFile方法是一个多参数函数，两个参数分别为文件名和回调函数。
+        // 经过转换器处理，它变成了一个单参数函数，只接受回调函数作为参数。这个单参数版本，就叫做 Thunk 函数。
+
+        // 任何函数，只要参数有回调函数，就能写成 Thunk 函数的形式。
+        var Thunk = function(fn){
+          return function(){
+            var args = Array.prototype.slice.call(arguments);
+            return function(callback){
+              args.push(callback);
+              return fn.call(this,...args,callback);
+            }
+          };
+        };
+        var readFileThunk = Thunk(fs.readFile);
+        readFileThunk(fileA)(callback);
+        function f(a,cb){
+          cb(a);
+        }
+        let ft = Thunk(f);
+        ft(1)(console.log);
+
+
+        // 5:Thunkify模块
+        // 生成环境的转换器，建议使用thunkify模块
+        $ npm install thunkify
+        //使用方式
+        var thunkify = require('thunkify');
+        var fs = rquire('fs');
+        var read = thunkify(fs.readFile);
+        read('package.json')(function(err,str){});
+        //thunkify源码
+        function thunkify(fn){
+          return function(){
+            var args = new Array(arguments.length);
+            var ctx = this;
+            for(let i=0;i<args.length;++i){
+              args[i] = arguments[i];//把参数赋值给args
+            }
+            return function(done){
+              var called;
+              args.push(function(){
+                if(called) return;
+                done.apply(null,arguments);
+              });
+              try{
+                fn.apply(ctx,args);
+              }catch(err){
+                done(err);
+              }
+            }
+          }
+        }
+        //运用
+        function f(a,b,callback){
+          var sum = a + b;
+          callback(sum);
+          callback(sum);
+        }
+        var ft = thunkify(f);
+        var print = console.log.bind(console);
+        ft(1,2)(print);//3
+
+
+        //6:generator函数的流程管理
+        // Thunk函数以前确实没什么用，但是 ES6 有了 Generator 函数，Thunk 函数现在可以用于 Generator 函数的自动流程管理。
+        // generator函数自动执行
+        function* gen(){}
+        var g = gen();
+        var res = g.next();
+        while(!res.done){
+          console.log(res.value);
+          res = g.next();
+        }
+        // 上面代码中，Generator 函数gen会自动执行完所有步骤。
+        // 这不适合异步操作。如果必须保证前一步执行完，才能执行后一步，上面的自动执行就不可行
+        // 这时，Thunk 函数就能派上用处。以读取文件为例。下面的 Generator 函数封装了两个异步操作。
+        var fs = require('fs');
+        var thunkify = require('thunkify');
+        var readFileThunk = thunkify(fs.readFile);
+        var gen = function* (){
+          var r1 = yield readFileThunk('./etc/fstab');
+          console.log(r1.toString());
+          var r2 = yield readFileThunk('./etc/shells');
+          console.log(r2.toString());
+        };
+        // yield命令用于将程序的执行权移出 Generator 函数，那么就需要一种方法，将执行权再交还给 Generator 函数。
+        // 这种方法就是 Thunk 函数，因为它可以在回调函数里，将执行权交还给 Generator 函数。
+        var g = gen();
+        var r1 = g.next();
+        r1.value(function(err,data){
+          if(err) throw err;
+          var r2 = g.next(data);
+          r2.next(function(err,data){
+            if(err) throw err;
+            g.next(data);
+          });
+        });
+
+
+        //7:thunk函数的自动流程管理
+        // Thunk 函数真正的威力，在于可以自动执行 Generator 函数。下面就是一个基于 Thunk 函数的 Generator 执行器
+        function run(fn){
+          var gen = fn();
+          function next(err,data){
+            
+          }
+        }
+
       </script>
   </body>
 </html>
