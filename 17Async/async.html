@@ -6,7 +6,120 @@
   </head>
   <body>
       <script type="text/javascript">
+          // 1：async是generator函数的语法糖
+          var gen = function* (){
+            var f1 = yield readFile('/etc/fstab');
+            var f2 = yield readFile('/etc/shells');
+            console.log(f1.toString());
+            console.log(f2.toString());
+          }
+          //等同于
+          var asyncReadFile = async function(){
+            var f1 = await readFile('/etc/fstab');
+            var f2 = await readFile('/etc/shells');
+            console.log(f1.toString());
+            console.log(f2.toString());
+          }
+          //async函数对generator函数的改进，体现在一下四点
+          // (1):内置执行器
+          // generator函数执行需要靠执行器，所以才有了co模块，而async函数函数自带执行器，asyncReadFile(),自动执行
+          // (2)：更好的语义
+          // async和await比起星号和yield语义更加清楚
+          // (3):更广的适用性
+          // co模块约定，yield命令后面只能是thunk函数或promise对象，但是async函数的await命令，后面可以跟原始对象，这个时候等同于原始操作
+          // (4):返回值是promise
+          // 比generator返回值是iterator对象方便多了，可以用then方法指定下一步操作
 
+          // 进一步说，async函数完全可以看作多个异步操作，包装成一个Promise对象，而await命令就是内部then命名的语法糖
+
+
+          // 2：基本用法
+          // async函数返回一个promise对象，可以使用then方法添加回调函数.当函数执行的时候，一旦遇到await就会先返回，等到异步操作完成，再接着执行函数体内后面的语句
+          async function getStockPriceByName(name){
+            var symbol = await getStockSymbol(name);
+            var stockPrice = await getStockPrice(symbol);
+            return stockPrice;
+          }
+          getStockPriceByName('goog').then(function(result){
+            console.log(result);
+          });
+          // 上面代码是一个获取股票报价的函数，函数前面的async关键字，表明该函数内部有异步操作。调用该函数时，会立即返回一个Promise对象。
+
+          //指定多少毫秒输出一个值
+          function timeout(ms){
+            return new Promise((resolve) => {
+              setTimeout(resolve,ms);//promise第一个参数是干嘛的
+            });
+          }
+          async function asyncPrint(value,ms){
+            await timeout(ms);
+            console.log(value);
+          }
+          asyncPrint('hello world',50);
+          // async函数返回的是 Promise 对象，可以作为await命令的参数。所以，上面的例子也可以写成下面的形式。
+          async function timeout(ms){
+            await new Promise((resolve) => {
+              setTimeout(resolve,ms);
+            });
+          }
+          async function asyncPrint(value,ms){
+            await timeout(ms);
+            console.log(value);
+          }
+          asyncPrint('hello world',50);
+          //async函数有多种使用形式
+          async function foo();//函数声明
+          const foo = async function(){};//函数表达式
+          let obj = {async foo(){}}//对象的方法
+          obj.foo().then(...);
+          //class的方法
+          class Storage(){
+            constructor(){
+              this.cachePromise = caches.open('avatars');
+            }
+            async getAvatar(name){
+              const cache = await this.cachePromise;
+              return cache.match(`/avatars/${name}.jpg`);
+            }
+          }
+          const = storge = new Storage();
+          storage.getAvatar('jake').then(…);
+          //箭头函数
+          const foo = async () => {};
+
+
+
+
+          //3:语法
+          // （1）:返回promise对象，async函数内部的return语句返回的值，会成为then方法回调函数的参数
+          async function f(){return 'hello world'};
+          f().then(v => console.log(v));//‘hello world’
+          // async 函数内部抛出错误，会导致返回的promise对象变为reject状态,抛出的错误对象会被catch方法回调函数接收到
+          async  function f(){
+            throw new Erroe('出错了');
+          }
+          f().then(
+            v => console.log(v),
+            e => console.log(e)//Error:出错了
+          )
+          // (2):promise对象的状态变化
+          // async函数返回的promise，必须等到所有await命令后面的promise对象执行完，才会发生状态改变，除非遇到return语句或者抛出错误。
+        async function getTitle(url){
+          let response = await fetch(url);
+          let html = await response.text();
+          return html.match(/<title>(\s\S]+)<\/title>/i)[1]);
+        }
+        getTitle('https://tc39.github.io/ecma262/').then(console.log)
+        // "ECMAScript 2017 Language Specification"
+        // 函数getTitle内部有三个操作：抓取网页、取出文本、匹配页面标题。只有这三个操作全部完成，才会执行then方法里面的console.log。
+        // (3):await命令
+        // await命令后面是一个 Promise 对象。如果不是，会被转成一个立即resolve的 Promise 对象。
+        async function f() {
+          return await 123;
+        }
+        f().then(v => console.log(v))
+        // 123
+        
       </script>
   </body>
 </html>
