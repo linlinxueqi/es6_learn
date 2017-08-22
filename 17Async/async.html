@@ -363,18 +363,7 @@
         //7:异步遍历器
         asyncIterator.next().then(({value,doone})=>);
         // 异步遍历器最大的语法特点，就是调用遍历器的next方法，返回的是一个Promise对象
-
         }
-
-
-
-
-
-
-
-
-
-        //7:异步遍历器
         // 一个对象的同步遍历器是部署在symbol.iterator属性上面，对象的异步遍历器接口，部署在symbol.asyncIterator属性上面
         let asyncIterable = createAsyncIterable(['a','b']);
         let asyncIterator = asyncIterable[Symbol.asyncIterator]();
