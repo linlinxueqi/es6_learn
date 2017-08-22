@@ -5,6 +5,7 @@
     <title>async函数</title>
   </head>
   <body>
+    <!-- //fetch 方法和reduce方法怎么运用 -->
       <script type="text/javascript">
           // 1：async是generator函数的语法糖
           var gen = function* (){
@@ -314,8 +315,51 @@
         }
         // async函数的写法
         async function chainAnimationsAsync(elem,animations){
-          
+          var ret = null;
+          try{
+            for(var anim of animations){
+              ret = await anim(elem);
+            }
+          }catch(e){}
+          return ret;
         }
+
+
+        //6:按顺序完成异步操作
+        function logInOrder(urls){
+          let textPromises = url.map(url => {
+            return fetch(url).then(response => response.text());
+          });
+
+          textPromises.reduce((chain,textPromise) => {
+            return chain.then(() => textPromise).then(text => console.log(text));
+          },Promise.resolve());
+        }
+        //async函数实现
+        async function logInOrder(urls){
+          for(let url of urls){
+            let response = await fetch(url);
+            console.log(await response.text());
+          }
+        }
+        //并发操作
+        async function logInOrder(urls){
+          let textPromises = urls.map(async url => {
+            let response = await fetch(url);
+            return response.text();
+          });
+          //按次序输出
+          for(let textPromise of textPromises){
+            console.log(await textPromise);
+          }
+        }
+        // 虽然map方法的参数是async函数，但它是并发执行的，因为只有async函数内部是继发执行，外部不受影响。
+        // 后面的for..of循环内部使用了await，因此实现了按顺序输出。
+
+
+        //7:异步遍历器
+        asyncIterator.next().then(({value,doone})=>);
+        // 异步遍历器最大的语法特点，就是调用遍历器的next方法，返回的是一个Promise对象
       </script>
   </body>
 </html>
